@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Alert {
+  id           String   @id @default(uuid())
+  name         String
+  score        Float
+  source       String
+  timestamp    DateTime @default(now())
+  faceImage    String
+  category     String   @default("UNKNOWN")  // BLACKLIST, WHITELIST, UNKNOWN, WEAPON
+  acknowledged Boolean  @default(false)
+  cameraId     String?
+  camera       Camera?  @relation(fields: [cameraId], references: [id])
+
+  @@index([category])
+  @@index([source])
+  @@index([timestamp])
+}
+
+model Camera {
+  id        String   @id @default(uuid())
+  name      String
+  rtspUrl   String   @unique
+  location  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  alerts    Alert[]
+  rules     CameraPersonRule[]
+}
+
+model Person {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  notes     String?
+  createdAt DateTime @default(now())
+  rules     CameraPersonRule[]
+}
+
+model CameraPersonRule {
+  id        String   @id @default(uuid())
+  cameraId  String?                           // null = GLOBAL rule (all cameras)
+  personId  String
+  listType  String                            // "BLACKLIST" or "WHITELIST"
+  createdAt DateTime @default(now())
+  camera    Camera?  @relation(fields: [cameraId], references: [id], onDelete: Cascade)
+  person    Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([cameraId, personId])
+  @@index([personId])
+}
