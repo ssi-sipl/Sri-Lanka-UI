@@ -1,40 +1,38 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useMqttContext, AlertData } from "@/providers/MqttProvider";
+import { useMqttContext } from "@/providers/MqttProvider";
 import { MapCameraNode } from "./MapTypes";
-import { AlertCard } from "../AlertCard";
 
 export const BankFloorMap: React.FC = () => {
   const { alerts } = useMqttContext();
-  const [selectedCam, setSelectedCam] = useState<MapCameraNode | null>(null);
   const [activeNodes, setActiveNodes] = useState<MapCameraNode[]>([]);
 
-  // 4 Default demo camera nodes matched to rooms on the generated blueprint image
+  // 4 Default camera nodes aligned precisely to room positions on the new flat 2D top-down floor plan image
   const defaultNodes: MapCameraNode[] = [
     {
       id: "cam-entrance",
       name: "Entrance CCTV",
-      location: "Service Entrance Vestibule",
-      x: 11.2,
-      y: 51.5,
+      location: "Main Entrance Door",
+      x: 50.0,
+      y: 88.0,
       rtspUrl: "rtsp://192.168.1.100/stream",
       status: "ONLINE",
     },
     {
       id: "cam-lobby",
       name: "Lobby Security Dome",
-      location: "Main Customer Lobby",
-      x: 60.5,
-      y: 52.0,
+      location: "Waiting Lounge Area",
+      x: 12.0,
+      y: 78.0,
       rtspUrl: "rtsp://192.168.1.101/stream",
       status: "ONLINE",
     },
     {
       id: "cam-tellers",
       name: "Tellers Counter Cam",
-      location: "Main Service Counters",
-      x: 76.5,
+      location: "Main Banking Hall",
+      x: 20.0,
       y: 52.0,
       rtspUrl: "rtsp://192.168.1.102/stream",
       status: "ONLINE",
@@ -43,8 +41,8 @@ export const BankFloorMap: React.FC = () => {
       id: "cam-vault",
       name: "Safe Vault Internal",
       location: "Cash Vault Room",
-      x: 31.5,
-      y: 24.5,
+      x: 85.0,
+      y: 24.0,
       rtspUrl: "rtsp://192.168.1.103/stream",
       status: "ONLINE",
     },
@@ -68,66 +66,51 @@ export const BankFloorMap: React.FC = () => {
     });
 
     setActiveNodes(updated);
-
-    // Keep the details panel details in sync if it is open
-    if (selectedCam) {
-      const currentSelected = updated.find((n) => n.id === selectedCam.id);
-      if (currentSelected) {
-        setSelectedCam(currentSelected);
-      }
-    }
   }, [alerts]);
 
-  // Filter alerts specifically matching the currently focused camera source
-  const getCameraDetections = (rtspUrl: string) => {
-    return alerts.filter((a) => a.source === rtspUrl);
-  };
-
   return (
-    <div className="bank-map-wrapper flex" style={{ minHeight: "560px", position: "relative" }}>
-      {/* 2D Floor Plan Image Layout Panel */}
+    <div className="bank-map-wrapper" style={{ minHeight: "560px", position: "relative", width: "100%" }}>
+      {/* 2D Floor Plan Layout Panel */}
       <div 
-        className="map-canvas-container flex-grow relative bg-glass" 
+        className="map-canvas-container relative bg-glass" 
         style={{ 
           minHeight: "560px", 
           overflow: "hidden", 
           border: "1px solid var(--border-color)", 
           borderRadius: "8px",
-          backgroundColor: "#030303"
+          backgroundColor: "#030303",
+          width: "100%"
         }}
       >
         {/* Background Blueprint Image */}
         <img 
           src="/bank_floor_plan.jpg" 
-          alt="Bank Floor Plan Blueprint" 
+          alt="Bank Floor Plan Flat 2D Render" 
           style={{
             width: "100%",
             height: "100%",
             objectFit: "cover",
-            opacity: 0.85,
+            opacity: 0.90,
             userSelect: "none"
           }}
         />
 
-        {/* Camera Hotspot Pins Overlay */}
+        {/* Camera Hotspot Pins Overlay (Static Indicators - No click action) */}
         {activeNodes.map((node) => {
-          const isSelected = selectedCam?.id === node.id;
           const statusClass = node.status === "THREAT" ? "pulse-threat" : "pulse-online";
           const iconColor = node.status === "THREAT" ? "var(--accent-red)" : "var(--accent-cyan)";
 
           return (
             <div
               key={node.id}
-              className={`camera-hotspot-pin ${isSelected ? "focused" : ""}`}
+              className="camera-hotspot-pin"
               style={{
                 position: "absolute",
                 left: `${node.x}%`,
                 top: `${node.y}%`,
                 transform: "translate(-50%, -50%)",
-                cursor: "pointer",
                 zIndex: 10,
               }}
-              onClick={() => setSelectedCam(isSelected ? null : node)}
             >
               {/* Dynamic Status Pulsing Glow Ring */}
               <div className={`hotspot-ring ${statusClass}`}></div>
@@ -187,104 +170,6 @@ export const BankFloorMap: React.FC = () => {
             </div>
           );
         })}
-      </div>
-
-      {/* Side-Drawer Details Panel for Selected Camera */}
-      <div
-        className={`camera-details-drawer bg-glass ${selectedCam ? "open" : ""}`}
-        style={{
-          width: selectedCam ? "380px" : "0",
-          opacity: selectedCam ? "1" : "0",
-          borderLeft: selectedCam ? "1px solid var(--border-color)" : "none",
-          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          maxHeight: "560px",
-        }}
-      >
-        {selectedCam && (
-          <div className="drawer-inner flex flex-column gap-md" style={{ padding: "1.25rem", width: "380px", flexShrink: 0, height: "100%", overflowY: "auto" }}>
-            {/* Header */}
-            <div className="flex justify-between align-center" style={{ borderBottom: "1px solid var(--border-subtle)", paddingBottom: "0.75rem" }}>
-              <div>
-                <h3 className="section-title text-cyan" style={{ fontSize: "1.1rem" }}>{selectedCam.name}</h3>
-                <span className="text-muted" style={{ fontSize: "0.75rem" }}>{selectedCam.location}</span>
-              </div>
-              <button
-                onClick={() => setSelectedCam(null)}
-                className="btn border-button"
-                style={{ padding: "0.25rem 0.5rem", fontSize: "0.75rem" }}
-              >
-                CLOSE
-              </button>
-            </div>
-
-            {/* Video Feed Simulation Box */}
-            <div className="mock-feed-container relative" style={{ height: "180px", backgroundColor: "#020202", border: "1px solid var(--border-subtle)", borderRadius: "4px", overflow: "hidden" }}>
-              {/* Scanlines Effect Overlay */}
-              <div className="cctv-overlay-grid"></div>
-              
-              {/* Video Overlay Specs */}
-              <div className="cctv-meta-overlay font-bold" style={{ position: "absolute", top: "10px", left: "10px", fontSize: "0.65rem", color: "#34c759", textShadow: "0 0 4px #34c759", zIndex: 5 }}>
-                <div>LIVE FEED // MON-0{selectedCam.id.replace("cam-", "")}</div>
-                <div>RTSP: {selectedCam.rtspUrl.replace("rtsp://", "")}</div>
-              </div>
-
-              <div className="cctv-rec-dot font-bold" style={{ position: "absolute", top: "10px", right: "10px", fontSize: "0.65rem", color: "#ff3b30", textShadow: "0 0 4px #ff3b30", display: "flex", alignItems: "center", gap: "4px", zIndex: 5 }}>
-                <span className="rec-pulse-dot" style={{ width: "6px", height: "6px", backgroundColor: "#ff3b30", borderRadius: "50%" }}></span>
-                REC
-              </div>
-
-              {/* Simulated Camera Video Noise */}
-              <div className="cctv-noise-container flex align-center justify-center" style={{ width: "100%", height: "100%" }}>
-                {selectedCam.status === "THREAT" ? (
-                  <div className="text-red font-bold animate-pulse" style={{ fontSize: "0.9rem", zIndex: 5, letterSpacing: "1px" }}>
-                    ⚠️ SYSTEM BREACH DETECTED
-                  </div>
-                ) : (
-                  <div className="text-cyan font-bold" style={{ fontSize: "0.8rem", opacity: 0.5, zIndex: 5 }}>
-                    MONITORING STREAM ACTIVE
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Camera Metrics */}
-            <div className="metrics-summary bg-glass" style={{ padding: "0.75rem", borderRadius: "4px", border: "1px solid var(--border-subtle)" }}>
-              <div className="flex justify-between font-bold" style={{ fontSize: "0.75rem", color: "#ffffff" }}>
-                <span>STREAM HEALTH:</span>
-                <span style={{ color: selectedCam.status === "THREAT" ? "var(--accent-red)" : "var(--accent-green)" }}>
-                  {selectedCam.status === "THREAT" ? "CRITICAL BREACH" : "100% ONLINE"}
-                </span>
-              </div>
-              <div className="flex justify-between font-bold" style={{ fontSize: "0.75rem", color: "#ffffff", marginTop: "0.5rem" }}>
-                <span>TOTAL LOGS:</span>
-                <span>{getCameraDetections(selectedCam.rtspUrl).length} detections</span>
-              </div>
-            </div>
-
-            {/* Recent Camera Logs */}
-            <div className="recent-logs-section flex flex-column gap-sm" style={{ flexGrow: 1 }}>
-              <h4 className="section-title text-cyan" style={{ fontSize: "0.85rem" }}>CAMERA EVENTS LOG</h4>
-              <div className="drawer-detections-list scrollable-area" style={{ overflowY: "auto", maxHeight: "170px" }}>
-                {getCameraDetections(selectedCam.rtspUrl).length === 0 ? (
-                  <div className="text-muted text-center" style={{ fontSize: "0.75rem", padding: "1.5rem" }}>
-                    No alerts received on this stream yet.
-                  </div>
-                ) : (
-                  <div className="flex flex-column gap-sm">
-                    {getCameraDetections(selectedCam.rtspUrl).map((alert, idx) => (
-                      <div key={alert.id || idx} style={{ transform: "scale(0.95)", transformOrigin: "top left" }}>
-                        <AlertCard alert={alert} />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
