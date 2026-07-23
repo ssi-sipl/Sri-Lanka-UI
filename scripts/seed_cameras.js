@@ -11,44 +11,53 @@ async function main() {
     {
       name: "Entrance CCTV",
       location: "Main Entrance Door",
-      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/1?cam=entrance",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69:554/snl/live/1/1",
       isActive: true
     },
     {
       name: "Lobby Security Dome",
       location: "Waiting Lounge Area",
-      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/2?cam=lobby",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69:554/snl/live/1/1",
       isActive: true
     },
     {
       name: "Tellers Counter Cam",
       location: "Main Banking Hall",
-      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/3?cam=tellers",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69:554/snl/live/1/1",
       isActive: true
     },
     {
       name: "Safe Vault Internal",
       location: "Cash Vault Room",
-      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/4?cam=vault",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69:554/snl/live/1/1",
       isActive: true
     }
   ];
 
   for (const cam of cameras) {
-    await prisma.camera.upsert({
-      where: { rtspUrl: cam.rtspUrl },
-      update: {
-        name: cam.name,
-        location: cam.location,
-        isActive: cam.isActive
-      },
-      create: {
-        name: cam.name,
-        location: cam.location,
-        rtspUrl: cam.rtspUrl,
-        isActive: cam.isActive
-      }
+    const existing = await prisma.camera.findFirst({
+      where: { name: cam.name }
     });
+    
+    if (existing) {
+      await prisma.camera.update({
+        where: { id: existing.id },
+        data: {
+          rtspUrl: cam.rtspUrl,
+          location: cam.location,
+          isActive: cam.isActive
+        }
+      });
+    } else {
+      await prisma.camera.create({
+        data: {
+          name: cam.name,
+          rtspUrl: cam.rtspUrl,
+          location: cam.location,
+          isActive: cam.isActive
+        }
+      });
+    }
   }
   
   console.log("✅ [SEED] Database cameras seeded successfully!");
