@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { exec } from "child_process";
+import { spawn } from "child_process";
+import path from "path";
+import fs from "fs";
 
 export async function POST(request: Request) {
   try {
@@ -32,25 +34,69 @@ export async function POST(request: Request) {
 
     const engineDir = "/Users/abhinnvyas/Projects/NotyCircuitsPvtLtd/Advance-Face-Recognition";
     const windowName = name || "Camera View";
+    
+    const pythonBin = path.join(engineDir, "venv", "bin", "python");
+    const scriptPath = path.join(engineDir, "play_stream.py");
 
-    // Use AppleScript to open a new macOS Terminal window, navigate to the folder, run the player, and exit the window on close
-    const cmd = `osascript -e 'tell application "Terminal" to do script "cd ${engineDir} && venv/bin/python play_stream.py --url \\"${cleanRtspUrl}\\" --name \\"${windowName}\\" && exit"'`;
+    if (!fs.existsSync(pythonBin)) {
+      return NextResponse.json(
+        { success: false, error: `Python virtualenv binary not found at: ${pythonBin}` },
+        { status: 500 }
+      );
+    }
 
-    console.log(`📡 [SPAWNER] Executing AppleScript (Clean URL: ${cleanRtspUrl}): ${cmd}`);
+    console.log(`📡 [SPAWNER] Spawning stream check: ${pythonBin} play_stream.py --url "${cleanRtspUrl}" --name "${windowName}"`);
 
-    exec(cmd, (err, stdout, stderr) => {
-      if (err) {
-        console.error("❌ [SPAWNER] AppleScript execution error:", err);
-      }
-      if (stderr) {
-        console.error("⚠️ [SPAWNER] AppleScript stderr:", stderr);
-      }
-      if (stdout) {
-        console.log("📡 [SPAWNER] AppleScript stdout:", stdout.trim());
-      }
+    // We return a Promise that resolves when the python script outputs its success log,
+    // or rejects if it exits with an error code before successfully connecting to the stream.
+    return new Promise<NextResponse>((resolve) => {
+      let resolved = false;
+      let errorOutput = "";
+
+      const child = spawn(
+        pythonBin,
+        [scriptPath, "--url", cleanRtspUrl, "--name", windowName],
+        {
+          cwd: engineDir,
+          // Let the process output propagate to capturing pipes
+        }
+      );
+
+      child.stdout.on("data", (data) => {
+        const outputStr = data.toString();
+        console.log(`[PLAYER STDOUT] ${outputStr.trim()}`);
+        
+        // When script prints "Stream active", it means connection succeeded and the window is displayed
+        if (outputStr.includes("Stream active")) {
+          resolved = true;
+          child.unref(); // Detach to let the player window run independently in the background
+          resolve(NextResponse.json({ success: true, message: "Stream active and window loaded" }));
+        }
+      });
+
+      child.stderr.on("data", (data) => {
+        const errorStr = data.toString();
+        console.error(`[PLAYER STDERR] ${errorStr.trim()}`);
+        errorOutput += errorStr;
+      });
+
+      child.on("close", (code) => {
+        if (!resolved) {
+          resolved = true;
+          const cleanedErr = errorOutput
+            .split("\n")
+            .filter(line => line.includes("failed") || line.includes("Error") || line.includes("Could not") || line.includes("Failed"))
+            .join(" // ") || "RTSP Stream connection timeout or unreachable.";
+            
+          resolve(
+            NextResponse.json(
+              { success: false, error: `Connection failed: ${cleanedErr}` },
+              { status: 500 }
+            )
+          );
+        }
+      });
     });
-
-    return NextResponse.json({ success: true, message: "Native stream window launched successfully" });
   } catch (error: any) {
     console.error("❌ [SPAWNER] Error launching python stream player:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
