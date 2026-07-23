@@ -117,7 +117,7 @@ export const BankFloorMap: React.FC = () => {
 
               {/* Central Camera Marker */}
               <div
-                className="hotspot-center flex align-center justify-center"
+                className="hotspot-center"
                 style={{
                   width: "36px",
                   height: "36px",
@@ -126,6 +126,9 @@ export const BankFloorMap: React.FC = () => {
                   border: `2px solid ${iconColor}`,
                   boxShadow: `0 0 12px ${iconColor}`,
                   transition: "all 0.25s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
                 }}
               >
                 {/* SVG Camera Icon */}
