@@ -5,7 +5,11 @@ const adapter = new PrismaBetterSqlite3({ url: "file:./dev.db" });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log("🌱 [SEED] Seeding 4 default map cameras into SQLite database...");
+  console.log("🧹 [SEED] Clearing old camera and alert records to prevent duplicates...");
+  await prisma.alert.updateMany({ data: { cameraId: null } });
+  await prisma.camera.deleteMany({});
+  
+  console.log("🌱 [SEED] Seeding 4 fresh default map cameras into SQLite database...");
   
   const cameras = [
     {
