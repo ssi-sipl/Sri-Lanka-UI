@@ -10,32 +10,32 @@ export const BankFloorMap: React.FC = () => {
   const [selectedCam, setSelectedCam] = useState<MapCameraNode | null>(null);
   const [activeNodes, setActiveNodes] = useState<MapCameraNode[]>([]);
 
-  // 4 Default demo camera nodes positioned absolutely on our 2D floor map coordinate system
+  // 4 Default demo camera nodes matched to rooms on the generated blueprint image
   const defaultNodes: MapCameraNode[] = [
     {
       id: "cam-entrance",
       name: "Entrance CCTV",
-      location: "Main Entrance Vestibule",
-      x: 15,
-      y: 75,
+      location: "Service Entrance Vestibule",
+      x: 11.2,
+      y: 51.5,
       rtspUrl: "rtsp://192.168.1.100/stream",
       status: "ONLINE",
     },
     {
       id: "cam-lobby",
       name: "Lobby Security Dome",
-      location: "Customer Waiting Lobby",
-      x: 45,
-      y: 50,
+      location: "Main Customer Lobby",
+      x: 60.5,
+      y: 52.0,
       rtspUrl: "rtsp://192.168.1.101/stream",
       status: "ONLINE",
     },
     {
       id: "cam-tellers",
       name: "Tellers Counter Cam",
-      location: "Teller Transaction Desks",
-      x: 75,
-      y: 35,
+      location: "Main Service Counters",
+      x: 76.5,
+      y: 52.0,
       rtspUrl: "rtsp://192.168.1.102/stream",
       status: "ONLINE",
     },
@@ -43,8 +43,8 @@ export const BankFloorMap: React.FC = () => {
       id: "cam-vault",
       name: "Safe Vault Internal",
       location: "Cash Vault Room",
-      x: 82,
-      y: 75,
+      x: 31.5,
+      y: 24.5,
       rtspUrl: "rtsp://192.168.1.103/stream",
       status: "ONLINE",
     },
@@ -84,50 +84,30 @@ export const BankFloorMap: React.FC = () => {
   };
 
   return (
-    <div className="bank-map-wrapper flex" style={{ minHeight: "600px", position: "relative" }}>
-      {/* 2D Floor Plan SVG Layout Panel */}
-      <div className="map-canvas-container flex-grow relative bg-glass" style={{ minHeight: "560px", overflow: "hidden", border: "1px solid var(--border-color)", borderRadius: "8px" }}>
-        
-        {/* SVG Grid Vector Floor Plan */}
-        <svg
-          viewBox="0 0 1000 600"
-          className="floor-plan-svg"
+    <div className="bank-map-wrapper flex" style={{ minHeight: "560px", position: "relative" }}>
+      {/* 2D Floor Plan Image Layout Panel */}
+      <div 
+        className="map-canvas-container flex-grow relative bg-glass" 
+        style={{ 
+          minHeight: "560px", 
+          overflow: "hidden", 
+          border: "1px solid var(--border-color)", 
+          borderRadius: "8px",
+          backgroundColor: "#030303"
+        }}
+      >
+        {/* Background Blueprint Image */}
+        <img 
+          src="/bank_floor_plan.jpg" 
+          alt="Bank Floor Plan Blueprint" 
           style={{
             width: "100%",
             height: "100%",
-            backgroundColor: "#000000",
-            backgroundImage: "radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px)",
-            backgroundSize: "20px 20px",
+            objectFit: "cover",
+            opacity: 0.85,
+            userSelect: "none"
           }}
-        >
-          {/* Outer Border Outlines */}
-          <rect x="20" y="20" width="960" height="560" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
-          
-          {/* Main Lobby Area Grid */}
-          <rect x="250" y="80" width="500" height="440" fill="rgba(255,255,255,0.01)" stroke="rgba(255,255,255,0.04)" strokeDasharray="5,5" />
-          
-          {/* Cash Vault Room Vector Walls */}
-          <rect x="750" y="280" width="210" height="240" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="2" />
-          <line x1="750" y1="420" x2="790" y2="420" stroke="#000000" strokeWidth="3" /> {/* Vault Entry Door Gap */}
-          <text x="855" y="405" fill="rgba(255,255,255,0.3)" fontSize="14" fontWeight="bold" textAnchor="middle">CASH VAULT</text>
-
-          {/* Teller Counter Vector Partition */}
-          <line x1="680" y1="80" x2="680" y2="280" stroke="rgba(255,255,255,0.12)" strokeWidth="2" />
-          <line x1="500" y1="280" x2="680" y2="280" stroke="rgba(255,255,255,0.12)" strokeWidth="2" />
-          <text x="590" y="185" fill="rgba(255,255,255,0.3)" fontSize="14" fontWeight="bold" textAnchor="middle">TELLER COUNTERS</text>
-
-          {/* ATM Vestibule (Left Entrance) */}
-          <rect x="40" y="280" width="210" height="240" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="2" />
-          <text x="145" y="405" fill="rgba(255,255,255,0.3)" fontSize="14" fontWeight="bold" textAnchor="middle">ATM VESTIBULE</text>
-
-          {/* Customer Waiting Lobby Area */}
-          <text x="500" y="440" fill="rgba(255,255,255,0.2)" fontSize="16" fontWeight="bold" textAnchor="middle">MAIN CUSTOMER LOBBY</text>
-
-          {/* Main Entrance (Front Vestibule) */}
-          <line x1="40" y1="80" x2="250" y2="80" stroke="rgba(255,255,255,0.12)" strokeWidth="2" />
-          <line x1="250" y1="80" x2="250" y2="220" stroke="rgba(255,255,255,0.12)" strokeWidth="2" />
-          <text x="145" y="145" fill="rgba(255,255,255,0.3)" fontSize="14" fontWeight="bold" textAnchor="middle">ENTRANCE VESTIBULE</text>
-        </svg>
+        />
 
         {/* Camera Hotspot Pins Overlay */}
         {activeNodes.map((node) => {
@@ -159,7 +139,7 @@ export const BankFloorMap: React.FC = () => {
                   width: "36px",
                   height: "36px",
                   borderRadius: "50%",
-                  backgroundColor: "rgba(10, 10, 14, 0.9)",
+                  backgroundColor: "rgba(10, 10, 14, 0.95)",
                   border: `2px solid ${iconColor}`,
                   boxShadow: `0 0 12px ${iconColor}`,
                   transition: "all 0.25s ease",
@@ -220,7 +200,7 @@ export const BankFloorMap: React.FC = () => {
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
-          maxHeight: "600px",
+          maxHeight: "560px",
         }}
       >
         {selectedCam && (
@@ -287,7 +267,7 @@ export const BankFloorMap: React.FC = () => {
             {/* Recent Camera Logs */}
             <div className="recent-logs-section flex flex-column gap-sm" style={{ flexGrow: 1 }}>
               <h4 className="section-title text-cyan" style={{ fontSize: "0.85rem" }}>CAMERA EVENTS LOG</h4>
-              <div className="drawer-detections-list scrollable-area" style={{ overflowY: "auto", maxHeight: "190px" }}>
+              <div className="drawer-detections-list scrollable-area" style={{ overflowY: "auto", maxHeight: "170px" }}>
                 {getCameraDetections(selectedCam.rtspUrl).length === 0 ? (
                   <div className="text-muted text-center" style={{ fontSize: "0.75rem", padding: "1.5rem" }}>
                     No alerts received on this stream yet.
