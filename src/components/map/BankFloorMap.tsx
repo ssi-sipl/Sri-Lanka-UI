@@ -6,6 +6,7 @@ import { MapCameraNode } from "./MapTypes";
 
 export const BankFloorMap: React.FC = () => {
   const { alerts } = useMqttContext();
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [baseNodes, setBaseNodes] = useState<MapCameraNode[]>([
     {
       id: "cam-entrance",
@@ -46,7 +47,7 @@ export const BankFloorMap: React.FC = () => {
   ]);
   const [activeNodes, setActiveNodes] = useState<MapCameraNode[]>([]);
 
-  // 1. On component load, fetch any custom cameras registered in the database via the API
+  // 1. On load, fetch registered cameras from database API
   useEffect(() => {
     const fetchDbCameras = async () => {
       try {
@@ -57,12 +58,13 @@ export const BankFloorMap: React.FC = () => {
           
           setBaseNodes((prevNodes) =>
             prevNodes.map((node) => {
-              // Look for a camera in the database whose location matches this node's location description
               const match = dbCams.find(
                 (c) => c.location && c.location.toLowerCase().trim() === node.location.toLowerCase().trim()
               );
               if (match) {
-                return { ...node, rtspUrl: match.rtspUrl };
+                // Strip restricted port 554 if registered in the database URL
+                const cleanedUrl = match.rtspUrl.replace(":554/", "/");
+                return { ...node, rtspUrl: cleanedUrl };
               }
               return node;
             })
@@ -76,15 +78,14 @@ export const BankFloorMap: React.FC = () => {
     fetchDbCameras();
   }, []);
 
-  // 2. Dynamically determine camera node status based on incoming real-time alerts stream
+  // 2. Determine threat status based on incoming real-time alerts
   useEffect(() => {
     const updated = baseNodes.map((node) => {
-      // Find if there is a threat (WEAPON or BLACKLIST) in the last 20 seconds for this camera source URL
       const hasRecentThreat = alerts.some((alert) => {
         if (alert.source !== node.rtspUrl) return false;
         const timeElapsed = Date.now() - new Date(alert.timestamp).getTime();
         const isThreat = alert.category === "BLACKLIST" || alert.category === "WEAPON";
-        return isThreat && timeElapsed < 20000; // 20 seconds window
+        return isThreat && timeElapsed < 20000;
       });
 
       return {
@@ -95,6 +96,23 @@ export const BankFloorMap: React.FC = () => {
 
     setActiveNodes(updated);
   }, [baseNodes, alerts]);
+
+  // Click handler: copies URL to clipboard and triggers player launch
+  const handleCamClick = (node: MapCameraNode) => {
+    // Copy the RTSP URL to clipboard for a seamless manual paste fallback (VLC / QuickTime)
+    navigator.clipboard.writeText(node.rtspUrl).then(() => {
+      setToastMessage(`📋 RTSP URL copied to clipboard! Paste into VLC (Cmd+N) to play.`);
+      // Auto-dismiss toast after 4 seconds
+      setTimeout(() => setToastMessage(null), 4000);
+    });
+
+    // Try to trigger the OS default protocol handler
+    try {
+      window.location.href = node.rtspUrl;
+    } catch (err) {
+      console.warn("⚠️ [MAP] Protocol launch blocked or unsupported:", err);
+    }
+  };
 
   return (
     <div className="bank-map-wrapper" style={{ minHeight: "560px", position: "relative", width: "100%" }}>
@@ -123,7 +141,7 @@ export const BankFloorMap: React.FC = () => {
           }}
         />
 
-        {/* Camera Hotspot Pins Overlay (Click to launch native player) */}
+        {/* Camera Hotspot Pins Overlay */}
         {activeNodes.map((node) => {
           const statusClass = node.status === "THREAT" ? "pulse-threat" : "pulse-online";
           const iconColor = node.status === "THREAT" ? "var(--accent-red)" : "var(--accent-cyan)";
@@ -139,7 +157,7 @@ export const BankFloorMap: React.FC = () => {
                 transform: "translate(-50%, -50%)",
                 zIndex: 10,
               }}
-              onClick={() => { window.location.href = node.rtspUrl; }}
+              onClick={() => handleCamClick(node)}
             >
               {/* Dynamic Status Pulsing Glow Ring */}
               <div className={`hotspot-ring ${statusClass}`}></div>
@@ -203,6 +221,29 @@ export const BankFloorMap: React.FC = () => {
           );
         })}
       </div>
+
+      {/* HUD Clipboard Toast Overlay */}
+      {toastMessage && (
+        <div
+          className="hud-toast animate-enter bg-glass"
+          style={{
+            position: "fixed",
+            bottom: "24px",
+            right: "24px",
+            padding: "0.8rem 1.25rem",
+            borderRadius: "6px",
+            border: "1px solid var(--accent-cyan)",
+            boxShadow: "0 0 20px rgba(5, 213, 250, 0.25)",
+            zIndex: 1000,
+            color: "#ffffff",
+            fontSize: "0.8rem",
+            fontWeight: "bold",
+            letterSpacing: "0.5px"
+          }}
+        >
+          {toastMessage}
+        </div>
+      )}
     </div>
   );
 };
