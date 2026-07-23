@@ -23,7 +23,7 @@ export const BankFloorMap: React.FC = () => {
       location: "Waiting Lounge Area",
       x: 12.0,
       y: 78.0,
-      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/1?cam=lobby",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/2?cam=lobby",
       status: "ONLINE",
     },
     {
@@ -32,7 +32,7 @@ export const BankFloorMap: React.FC = () => {
       location: "Main Banking Hall",
       x: 20.0,
       y: 52.0,
-      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/1?cam=tellers",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/3?cam=tellers",
       status: "ONLINE",
     },
     {
@@ -41,7 +41,7 @@ export const BankFloorMap: React.FC = () => {
       location: "Cash Vault Room",
       x: 85.0,
       y: 24.0,
-      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/1?cam=vault",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/4?cam=vault",
       status: "ONLINE",
     },
   ]);

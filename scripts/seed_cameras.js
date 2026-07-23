@@ -17,19 +17,19 @@ async function main() {
     {
       name: "Lobby Security Dome",
       location: "Waiting Lounge Area",
-      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/1?cam=lobby",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/2?cam=lobby",
       isActive: true
     },
     {
       name: "Tellers Counter Cam",
       location: "Main Banking Hall",
-      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/1?cam=tellers",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/3?cam=tellers",
       isActive: true
     },
     {
       name: "Safe Vault Internal",
       location: "Cash Vault Room",
-      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/1?cam=vault",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/4?cam=vault",
       isActive: true
     }
   ];
