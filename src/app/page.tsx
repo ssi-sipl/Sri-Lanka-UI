@@ -3,10 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import { useMqttContext } from "@/providers/MqttProvider";
-import { AlertCard } from "@/components/AlertCard";
+import { BankFloorMap } from "@/components/map/BankFloorMap";
 
 export default function DashboardPage() {
-  const { alerts, stats, unacknowledgedCounts } = useMqttContext();
+  const { stats, unacknowledgedCounts } = useMqttContext();
 
   return (
     <div className="dashboard-container flex flex-column gap-md animate-enter">
@@ -66,31 +66,16 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Replaced Columns with Single Full-Width Monitor Panel */}
+      {/* Interactive 2D Bank Floor Plan Monitor */}
       <div className="dashboard-column gap-sm" style={{ width: "100%", marginTop: "0.5rem" }}>
         <div className="column-header flex justify-between align-center" style={{ borderBottom: "1px solid var(--border-subtle)", paddingBottom: "0.75rem", marginBottom: "1rem" }}>
           <div>
-            <h2 className="section-title">Live Detections Monitor</h2>
-            <p className="section-sublabel">Real-time stream of incoming face matches and weapon detections.</p>
+            <h2 className="section-title">BANK FLOOR MONITOR</h2>
+            <p className="section-sublabel">Interactive 2D spatial camera plotting and live security status map.</p>
           </div>
         </div>
 
-        <div className="scrollable-feed scrollable-area" style={{ maxHeight: "calc(100vh - 320px)" }}>
-          {alerts.length === 0 ? (
-            <div className="empty-radar-wrap" style={{ borderStyle: "dashed", padding: "4rem" }}>
-              <div className="radar-scanning-wave"></div>
-              <div className="radar-center-dot"></div>
-              <h4 className="radar-label text-muted">WAITING FOR INCOMING STREAM DETECTIONS</h4>
-              <p className="radar-sublabel">Start the Python verify scripts to push face or weapon feeds.</p>
-            </div>
-          ) : (
-            <div className="alerts-vertical-list">
-              {alerts.map((alert, idx) => (
-                <AlertCard key={alert.id || idx} alert={alert} />
-              ))}
-            </div>
-          )}
-        </div>
+        <BankFloorMap />
       </div>
     </div>
   );
