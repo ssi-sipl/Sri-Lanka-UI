@@ -13,7 +13,7 @@ export default function DashboardPage() {
       {/* Page Header */}
       <div className="dashboard-header">
         <div>
-          <h1 className="dashboard-title">Cognitive Security Portal</h1>
+          <h1 className="dashboard-title">Banking Intelligence System</h1>
           <p className="section-sublabel">Real-time threat detection, weapon scoping, and active profile monitor.</p>
         </div>
         <div className="feed-actions-bar">

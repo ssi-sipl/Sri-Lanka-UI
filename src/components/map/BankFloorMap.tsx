@@ -6,17 +6,14 @@ import { MapCameraNode } from "./MapTypes";
 
 export const BankFloorMap: React.FC = () => {
   const { alerts } = useMqttContext();
-  const [activeNodes, setActiveNodes] = useState<MapCameraNode[]>([]);
-
-  // 4 Default camera nodes aligned precisely to room positions on the new flat 2D top-down floor plan image
-  const defaultNodes: MapCameraNode[] = [
+  const [baseNodes, setBaseNodes] = useState<MapCameraNode[]>([
     {
       id: "cam-entrance",
       name: "Entrance CCTV",
       location: "Main Entrance Door",
       x: 50.0,
       y: 88.0,
-      rtspUrl: "rtsp://192.168.1.100/stream",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69:554/snl/live/1/1",
       status: "ONLINE",
     },
     {
@@ -25,7 +22,7 @@ export const BankFloorMap: React.FC = () => {
       location: "Waiting Lounge Area",
       x: 12.0,
       y: 78.0,
-      rtspUrl: "rtsp://192.168.1.101/stream",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69:554/snl/live/1/1",
       status: "ONLINE",
     },
     {
@@ -34,7 +31,7 @@ export const BankFloorMap: React.FC = () => {
       location: "Main Banking Hall",
       x: 20.0,
       y: 52.0,
-      rtspUrl: "rtsp://192.168.1.102/stream",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69:554/snl/live/1/1",
       status: "ONLINE",
     },
     {
@@ -43,15 +40,46 @@ export const BankFloorMap: React.FC = () => {
       location: "Cash Vault Room",
       x: 85.0,
       y: 24.0,
-      rtspUrl: "rtsp://192.168.1.103/stream",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69:554/snl/live/1/1",
       status: "ONLINE",
     },
-  ];
+  ]);
+  const [activeNodes, setActiveNodes] = useState<MapCameraNode[]>([]);
 
-  // Dynamically determine camera nodes status based on recent alerts in the stream
+  // 1. On component load, fetch any custom cameras registered in the database via the API
   useEffect(() => {
-    const updated = defaultNodes.map((node) => {
-      // Find if there is a threat (WEAPON or BLACKLIST) in the last 20 seconds for this camera source
+    const fetchDbCameras = async () => {
+      try {
+        const res = await fetch("/api/cameras");
+        const json = await res.json();
+        if (json.success && json.data) {
+          const dbCams = json.data as { location: string; rtspUrl: string }[];
+          
+          setBaseNodes((prevNodes) =>
+            prevNodes.map((node) => {
+              // Look for a camera in the database whose location matches this node's location description
+              const match = dbCams.find(
+                (c) => c.location && c.location.toLowerCase().trim() === node.location.toLowerCase().trim()
+              );
+              if (match) {
+                return { ...node, rtspUrl: match.rtspUrl };
+              }
+              return node;
+            })
+          );
+        }
+      } catch (err) {
+        console.error("⚠️ [MAP] Failed to fetch cameras from database API:", err);
+      }
+    };
+
+    fetchDbCameras();
+  }, []);
+
+  // 2. Dynamically determine camera node status based on incoming real-time alerts stream
+  useEffect(() => {
+    const updated = baseNodes.map((node) => {
+      // Find if there is a threat (WEAPON or BLACKLIST) in the last 20 seconds for this camera source URL
       const hasRecentThreat = alerts.some((alert) => {
         if (alert.source !== node.rtspUrl) return false;
         const timeElapsed = Date.now() - new Date(alert.timestamp).getTime();
@@ -66,7 +94,7 @@ export const BankFloorMap: React.FC = () => {
     });
 
     setActiveNodes(updated);
-  }, [alerts]);
+  }, [baseNodes, alerts]);
 
   return (
     <div className="bank-map-wrapper" style={{ minHeight: "560px", position: "relative", width: "100%" }}>
@@ -95,7 +123,7 @@ export const BankFloorMap: React.FC = () => {
           }}
         />
 
-        {/* Camera Hotspot Pins Overlay (Static Indicators - No click action) */}
+        {/* Camera Hotspot Pins Overlay (Click to launch native player) */}
         {activeNodes.map((node) => {
           const statusClass = node.status === "THREAT" ? "pulse-threat" : "pulse-online";
           const iconColor = node.status === "THREAT" ? "var(--accent-red)" : "var(--accent-cyan)";

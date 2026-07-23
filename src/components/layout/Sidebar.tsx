@@ -79,8 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onClose }) => {
         </div>
         {!isCollapsed && (
           <div className="brand-titles">
-            <h2>Cognitive Gateway</h2>
-            <span className="brand-subtitle">NotyCircuits</span>
+            <h2>B.I.S</h2>
           </div>
         )}
       </div>
