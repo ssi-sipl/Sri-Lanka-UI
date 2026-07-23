@@ -139,7 +139,7 @@ export const BankFloorMap: React.FC = () => {
                 transform: "translate(-50%, -50%)",
                 zIndex: 10,
               }}
-              onClick={() => window.open(node.rtspUrl, "_blank")}
+              onClick={() => { window.location.href = node.rtspUrl; }}
             >
               {/* Dynamic Status Pulsing Glow Ring */}
               <div className={`hotspot-ring ${statusClass}`}></div>
