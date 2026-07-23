@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import { spawn } from "child_process";
-import path from "path";
-import fs from "fs";
+import { exec } from "child_process";
 
 export async function POST(request: Request) {
   try {
@@ -15,34 +13,25 @@ export async function POST(request: Request) {
       );
     }
 
-    // Absolute path to the python codebase folder
     const engineDir = "/Users/abhinnvyas/Projects/NotyCircuitsPvtLtd/Advance-Face-Recognition";
-    
-    // Fallback path resolution to find venv binary
-    const pythonBin = path.join(engineDir, "venv", "bin", "python");
-    const scriptPath = path.join(engineDir, "play_stream.py");
+    const windowName = name || "Camera View";
 
-    if (!fs.existsSync(pythonBin)) {
-      return NextResponse.json(
-        { success: false, error: `Python virtualenv binary not found at: ${pythonBin}` },
-        { status: 500 }
-      );
-    }
+    // Use AppleScript to open a new macOS Terminal window, navigate to the folder, run the player, and exit the window on close
+    const cmd = `osascript -e 'tell application "Terminal" to do script "cd ${engineDir} && venv/bin/python play_stream.py --url \\"${rtspUrl}\\" --name \\"${windowName}\\" && exit"'`;
 
-    console.log(`📡 [SPAWNER] Spawning live viewer: ${pythonBin} play_stream.py --url "${rtspUrl}" --name "${name || "Camera View"}"`);
+    console.log(`📡 [SPAWNER] Executing AppleScript: ${cmd}`);
 
-    // Spawn the python process asynchronously and detached so it doesn't block Node.js server
-    const child = spawn(
-      pythonBin,
-      [scriptPath, "--url", rtspUrl, "--name", name || "Camera View"],
-      {
-        cwd: engineDir,
-        detached: true,
-        stdio: "ignore", // ignore standard I/O to let it run independently
+    exec(cmd, (err, stdout, stderr) => {
+      if (err) {
+        console.error("❌ [SPAWNER] AppleScript execution error:", err);
       }
-    );
-
-    child.unref(); // prevent parent from waiting for child to exit
+      if (stderr) {
+        console.error("⚠️ [SPAWNER] AppleScript stderr:", stderr);
+      }
+      if (stdout) {
+        console.log("📡 [SPAWNER] AppleScript stdout:", stdout.trim());
+      }
+    });
 
     return NextResponse.json({ success: true, message: "Native stream window launched successfully" });
   } catch (error: any) {
