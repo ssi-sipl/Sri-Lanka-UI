@@ -55,10 +55,9 @@ export async function POST(request: Request) {
 
       const child = spawn(
         pythonBin,
-        [scriptPath, "--url", cleanRtspUrl, "--name", windowName],
+        ["-u", scriptPath, "--url", cleanRtspUrl, "--name", windowName],
         {
           cwd: engineDir,
-          // Let the process output propagate to capturing pipes
         }
       );
 
