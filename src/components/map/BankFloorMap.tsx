@@ -6,7 +6,6 @@ import { MapCameraNode } from "./MapTypes";
 
 export const BankFloorMap: React.FC = () => {
   const { alerts } = useMqttContext();
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [baseNodes, setBaseNodes] = useState<MapCameraNode[]>([
     {
       id: "cam-entrance",
@@ -14,7 +13,7 @@ export const BankFloorMap: React.FC = () => {
       location: "Main Entrance Door",
       x: 50.0,
       y: 88.0,
-      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/1",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/1?cam=entrance",
       status: "ONLINE",
     },
     {
@@ -23,7 +22,7 @@ export const BankFloorMap: React.FC = () => {
       location: "Waiting Lounge Area",
       x: 12.0,
       y: 78.0,
-      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/1",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/1?cam=lobby",
       status: "ONLINE",
     },
     {
@@ -32,7 +31,7 @@ export const BankFloorMap: React.FC = () => {
       location: "Main Banking Hall",
       x: 20.0,
       y: 52.0,
-      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/1",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/1?cam=tellers",
       status: "ONLINE",
     },
     {
@@ -41,7 +40,7 @@ export const BankFloorMap: React.FC = () => {
       location: "Cash Vault Room",
       x: 85.0,
       y: 24.0,
-      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/1",
+      rtspUrl: "rtsp://admin:123456Ai@192.168.1.69/snl/live/1/1?cam=vault",
       status: "ONLINE",
     },
   ]);
@@ -97,20 +96,16 @@ export const BankFloorMap: React.FC = () => {
     setActiveNodes(updated);
   }, [baseNodes, alerts]);
 
-  // Click handler: copies URL to clipboard and triggers player launch
-  const handleCamClick = (node: MapCameraNode) => {
-    // Copy the RTSP URL to clipboard for a seamless manual paste fallback (VLC / QuickTime)
-    navigator.clipboard.writeText(node.rtspUrl).then(() => {
-      setToastMessage(`📋 RTSP URL copied to clipboard! Paste into VLC (Cmd+N) to play.`);
-      // Auto-dismiss toast after 4 seconds
-      setTimeout(() => setToastMessage(null), 4000);
-    });
-
-    // Try to trigger the OS default protocol handler
+  // Click handler: requests Node server to spawn native player
+  const handleCamClick = async (node: MapCameraNode) => {
     try {
-      window.location.href = node.rtspUrl;
+      await fetch("/api/cameras/play", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rtspUrl: node.rtspUrl, name: node.name }),
+      });
     } catch (err) {
-      console.warn("⚠️ [MAP] Protocol launch blocked or unsupported:", err);
+      console.error("⚠️ [MAP] Failed to trigger server-side stream viewer:", err);
     }
   };
 
@@ -221,29 +216,6 @@ export const BankFloorMap: React.FC = () => {
           );
         })}
       </div>
-
-      {/* HUD Clipboard Toast Overlay */}
-      {toastMessage && (
-        <div
-          className="hud-toast animate-enter bg-glass"
-          style={{
-            position: "fixed",
-            bottom: "24px",
-            right: "24px",
-            padding: "0.8rem 1.25rem",
-            borderRadius: "6px",
-            border: "1px solid var(--accent-cyan)",
-            boxShadow: "0 0 20px rgba(5, 213, 250, 0.25)",
-            zIndex: 1000,
-            color: "#ffffff",
-            fontSize: "0.8rem",
-            fontWeight: "bold",
-            letterSpacing: "0.5px"
-          }}
-        >
-          {toastMessage}
-        </div>
-      )}
     </div>
   );
 };
