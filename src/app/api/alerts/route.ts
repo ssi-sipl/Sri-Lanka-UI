@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     }
 
     // Try to find the camera to link relations
-    const camera = await prisma.camera.findUnique({
+    const camera = await prisma.camera.findFirst({
       where: { rtspUrl: source }
     });
 
