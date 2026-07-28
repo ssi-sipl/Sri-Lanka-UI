@@ -38,7 +38,7 @@ export default function PeoplePage() {
       }
 
       // 2. Fetch global rules (cameraId is null)
-      const rulesRes = await fetch("/api/rules?global=true");
+      const rulesRes = await fetch("/api/rules?cameraId=null");
       const rulesJson = await rulesRes.json();
       if (rulesJson.success) {
         setGlobalRules(rulesJson.data);
