@@ -53,6 +53,8 @@ export function initMqttSubscriber() {
         where: { rtspUrl: source }
       });
       
+      console.log(`[MQTT] Camera lookup for source "${source}": ${camera ? `FOUND → ${camera.name} (${camera.id})` : "NOT FOUND"}`);
+      
       let resolvedCategory = "UNKNOWN";
       
       if (isWeapon) {
@@ -62,6 +64,8 @@ export function initMqttSubscriber() {
         const registeredPerson = await prisma.person.findUnique({
           where: { name: normalizedName }
         });
+        
+        console.log(`[MQTT] Person lookup for "${normalizedName}": ${registeredPerson ? `FOUND → ${registeredPerson.id}` : "NOT FOUND (will be UNKNOWN)"}`);
         
         if (registeredPerson) {
           resolvedCategory = "WHITELIST";
@@ -77,6 +81,9 @@ export function initMqttSubscriber() {
             });
             if (cameraRule) {
               resolvedCategory = cameraRule.listType;
+              console.log(`[MQTT] Per-camera rule FOUND → ${cameraRule.listType}`);
+            } else {
+              console.log(`[MQTT] No per-camera rule for this person on this camera`);
             }
           }
           
@@ -91,12 +98,15 @@ export function initMqttSubscriber() {
             });
             if (globalRule) {
               resolvedCategory = globalRule.listType;
+              console.log(`[MQTT] Global rule FOUND → ${globalRule.listType}`);
             }
           }
         } else {
           resolvedCategory = "UNKNOWN";
         }
       }
+      
+      console.log(`[MQTT] Final resolved category: ${resolvedCategory}`);
       
       // Save Alert to local SQLite database
       const newAlert = await prisma.alert.create({
