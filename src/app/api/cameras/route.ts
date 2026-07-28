@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     }
 
     // Check if camera with this RTSP URL already exists
-    const existing = await prisma.camera.findUnique({
+    const existing = await prisma.camera.findFirst({
       where: { rtspUrl }
     });
 
