@@ -49,7 +49,7 @@ export function initMqttSubscriber() {
       }
       
       // Resolve category inside SQLite database
-      const camera = await prisma.camera.findUnique({
+      const camera = await prisma.camera.findFirst({
         where: { rtspUrl: source }
       });
       
