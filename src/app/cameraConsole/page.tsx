@@ -35,6 +35,12 @@ const actions = [
   },
 ];
 
+const launchCameraFace = async () => {
+    await fetch("/api/register-face", {
+        method: "POST",
+    });
+};
+
 export default function CameraConsole() {
   return (
     <div className="camera-console">
@@ -58,8 +64,8 @@ export default function CameraConsole() {
           <p>{action.description}</p>
 
           <button
-            onClick={() => console.log(action.title)}
-            className={`camera-button ${action.button}`}
+            onClick={() => launchCameraFace()}
+            className={`camera-button`}
           >
             Launch
             <ArrowRight size={18} />
