@@ -12,6 +12,7 @@ export async function GET() {
       },
       orderBy: { createdAt: "desc" }
     });
+    console.log("to figure out consideration of webcam", cameras);
     return NextResponse.json({ success: true, data: cameras });
   } catch (error: any) {
     console.error("[API] GET /api/cameras error:", error);

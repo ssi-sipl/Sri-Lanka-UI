@@ -1275,3 +1275,152 @@ button, input, select, textarea {
   background-size: 8px 8px;
 }
 
+
+.camera-console {
+  padding: 30px;
+}
+
+.camera-header {
+  margin-bottom: 32px;
+}
+
+.camera-header h1 {
+    color: white;
+    font-size: 38px;
+    margin: 0;
+    font-weight: bold;
+}
+
+.camera-header p {
+    color: #cfcfcf;
+    margin-top: 8px;
+    font-size: 16px;
+}
+
+.camera-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:28px;
+}
+
+@media (min-width: 1280px) {
+  .camera-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.camera-card {
+    background: rgb(234, 225, 225);
+    border-radius: 18px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    height: 290px;
+
+    box-shadow: 0 10px 25px rgba(0,0,0,.25);
+    transition: .3s;
+}
+
+.camera-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,.35);
+}
+
+.camera-icon{
+    width:60px;
+    height:60px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    border-radius:16px;
+    margin-bottom:22px;
+}
+
+.camera-card h2 {
+  margin: 0;
+  font-size: 22px;
+  color: #1f2937;
+}
+
+.camera-card p {
+  flex: 1;
+  margin-top: 12px;
+  color: #6b7280;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.camera-button{
+    height:48px;
+    border:none;
+    border-radius:12px;
+    color:white;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+
+    transition:.25s;
+}
+
+.camera-button:hover {
+  opacity: 0.9;
+}
+
+.blue-icon{
+    color:#2563eb;
+    background:#dbeafe;
+}
+
+.green-icon{
+    color:#16a34a;
+    background:#dcfce7;
+}
+
+.orange-icon{
+    color:#ea580c;
+    background:#ffedd5;
+}
+
+.purple-icon{
+    color:#9333ea;
+    background:#f3e8ff;
+}
+
+.blue-btn{
+    background:#2563eb;
+}
+
+.blue-btn:hover{
+    background:#1d4ed8;
+}
+
+.green-btn{
+    background:#16a34a;
+}
+
+.green-btn:hover{
+    background:#15803d;
+}
+
+.orange-btn{
+    background:#ea580c;
+}
+
+.orange-btn:hover{
+    background:#c2410c;
+}
+
+.purple-btn{
+    background:#9333ea;
+}
+
+.purple-btn:hover{
+    background:#7e22ce;
+}
