@@ -34,14 +34,14 @@ const actions = [
     description: "Start continuous live camera monitoring.",
     icon: MonitorPlay,
     color: "orange-icon",
-    endpoint: "/api/register-face"
+    endpoint: "/api/continuos-feed"
   },
   {
     title: "Verify Identity",
     description: "Capture a photo and verify a person.",
     icon: ShieldCheck,
     color: "purple-icon",
-    endpoint: "/api/register-face"
+    endpoint: "/api/verify-identity"
   },
 ];
 
