@@ -8,38 +8,44 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+const launchAction = async (endpoint: string) => {
+  await fetch(endpoint, {
+    method: "POST",
+  });
+};
+
 const actions = [
   {
     title: "Register Face",
     description: "Enroll a new user's face into the system.",
     icon: UserPlus,
     color: "blue-icon",
+    endpoint: "/api/register-face"
   },
   {
     title: "Multi-Camera View",
     description: "View multiple camera feeds simultaneously.",
     icon: Camera,
     color: "green-icon",
+    endpoint: "/api/multi-camera-view"
   },
   {
     title: "Continuous Feed",
     description: "Start continuous live camera monitoring.",
     icon: MonitorPlay,
     color: "orange-icon",
+    endpoint: "/api/register-face"
   },
   {
     title: "Verify Identity",
     description: "Capture a photo and verify a person.",
     icon: ShieldCheck,
     color: "purple-icon",
+    endpoint: "/api/register-face"
   },
 ];
 
-const launchCameraFace = async () => {
-    await fetch("/api/register-face", {
-        method: "POST",
-    });
-};
+
 
 export default function CameraConsole() {
   return (
@@ -64,7 +70,7 @@ export default function CameraConsole() {
           <p>{action.description}</p>
 
           <button
-            onClick={() => launchCameraFace()}
+              onClick={() => launchAction(action.endpoint)}
             className={`camera-button`}
           >
             Launch
