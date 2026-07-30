@@ -1309,68 +1309,207 @@ button, input, select, textarea {
   }
 }
 
+/* ==========================================
+   PREMIUM GLASSMORPHIC CARD DESIGN
+   ========================================== */
+
 .camera-card {
-    background: rgb(234, 225, 225);
-    border-radius: 18px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    height: 290px;
-
-    box-shadow: 0 10px 25px rgba(0,0,0,.25);
-    transition: .3s;
+  position: relative;
+  background: rgba(18, 18, 22, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 20px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  height: 310px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Hover Effect: Card Lift & Dynamic Glow */
 .camera-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0,0,0,.35);
+  transform: translateY(-6px);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.65), 0 0 20px rgba(255, 255, 255, 0.03);
 }
 
-.camera-icon{
-    width:60px;
-    height:60px;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-    border-radius:16px;
-    margin-bottom:22px;
+/* Subtle Top Inner Highlight Edge */
+.camera-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  opacity: 0.5;
 }
 
+/* Headings & Descriptions */
 .camera-card h2 {
   margin: 0;
-  font-size: 22px;
-  color: #1f2937;
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.01em;
 }
 
 .camera-card p {
   flex: 1;
-  margin-top: 12px;
-  color: #6b7280;
-  line-height: 1.6;
+  margin-top: 10px;
+  color: #a1a1aa;
+  line-height: 1.55;
+  font-size: 13.5px;
+}
+
+/* Modern Glowing Icon Containers */
+.camera-icon {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.camera-card:hover .camera-icon {
+  transform: scale(1.08);
+}
+
+/* Icon Variants with Ambient Glows */
+.blue-icon {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.25);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+}
+
+.green-icon {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+  border-color: rgba(74, 222, 128, 0.25);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.15);
+}
+
+.orange-icon {
+  color: #fb923c;
+  background: rgba(251, 146, 60, 0.1);
+  border-color: rgba(251, 146, 60, 0.25);
+  box-shadow: 0 0 20px rgba(251, 146, 60, 0.15);
+}
+
+.purple-icon {
+  color: #c084fc;
+  background: rgba(192, 132, 252, 0.1);
+  border-color: rgba(192, 132, 252, 0.25);
+  box-shadow: 0 0 20px rgba(192, 132, 252, 0.15);
+}
+/* ==========================================
+   CLASSIC DARK THEME BUTTONS & INTERACTIONS
+   ========================================== */
+
+.camera-button {
+  position: relative;
+  height: 48px;
+  width: 100%;
+  padding: 0 20px;
+  background-color: #0d0d10;
+  color: #ffffff;
   font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  cursor: pointer;
+  overflow: hidden;
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.camera-button{
-    height:48px;
-    border:none;
-    border-radius:12px;
-    color:white;
-    font-size:15px;
-    font-weight:600;
-    cursor:pointer;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:8px;
-
-    transition:.25s;
+/* Subtle glass overlay light source */
+.camera-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
 }
 
-.camera-button:hover {
-  opacity: 0.9;
+/* Classic Hover State */
+.camera-button:hover:not(:disabled) {
+  background-color: #000000;
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 255, 255, 0.08);
+}
+
+.camera-button:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+/* Arrow Slide Effect on Hover */
+.camera-button svg {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.camera-button:hover:not(:disabled) svg {
+  transform: translateX(4px);
+}
+
+/* Active / Click State */
+.camera-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Disabled / Dynamic Running & Failed States */
+.camera-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.camera-button.btn-running {
+  background-color: rgba(52, 199, 89, 0.1);
+  border-color: rgba(52, 199, 89, 0.3);
+  color: var(--accent-green);
+}
+
+.camera-button.btn-starting {
+  background-color: rgba(255, 149, 0, 0.1);
+  border-color: rgba(255, 149, 0, 0.3);
+  color: var(--accent-yellow);
+}
+
+.camera-button.btn-failed {
+  background-color: rgba(255, 59, 48, 0.1);
+  border-color: rgba(255, 59, 48, 0.3);
+  color: var(--accent-red);
 }
 
 .blue-icon{

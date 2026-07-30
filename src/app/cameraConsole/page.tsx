@@ -6,6 +6,9 @@ import {
   MonitorPlay,
   ShieldCheck,
   ArrowRight,
+  Loader2,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 
 const actions = [
@@ -44,11 +47,18 @@ const actions = [
 ];
 
 export default function CameraConsole() {
+  const [status, setStatus] = useState<Record<string, string>>({
+    "/api/register-face": "idle",
+    "/api/multi-camera-view": "idle",
+    "/api/continuos-feed": "idle",
+    "/api/verify-identity": "idle",
+  });
+
   useEffect(() => {
     const fetchStatus = async () => {
       try {
         const res = await fetch("/api/process-status");
-        const data = await res.json(); 
+        const data = await res.json();
 
         setStatus({
           "/api/register-face": data.registerFace,
@@ -62,18 +72,10 @@ export default function CameraConsole() {
     };
 
     fetchStatus();
-
     const interval = setInterval(fetchStatus, 1000);
 
     return () => clearInterval(interval);
   }, []);
-
-  const [status, setStatus] = useState<Record<string, string>>({
-    "/api/register-face": "idle",
-    "/api/multi-camera-view": "idle",
-    "/api/continuos-feed": "idle",
-    "/api/verify-identity": "idle",
-  });
 
   const launchAction = async (endpoint: string) => {
     try {
@@ -82,6 +84,19 @@ export default function CameraConsole() {
       });
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const getButtonClass = (endpointStatus: string) => {
+    switch (endpointStatus) {
+      case "starting":
+        return "camera-button btn-starting";
+      case "running":
+        return "camera-button btn-running";
+      case "failed":
+        return "camera-button btn-failed";
+      default:
+        return "camera-button";
     }
   };
 
@@ -95,6 +110,7 @@ export default function CameraConsole() {
       <div className="camera-grid">
         {actions.map((action) => {
           const Icon = action.icon;
+          const currentStatus = status[action.endpoint];
 
           return (
             <div key={action.title} className="camera-card">
@@ -103,28 +119,42 @@ export default function CameraConsole() {
               </div>
 
               <h2>{action.title}</h2>
-
               <p>{action.description}</p>
 
               <button
                 onClick={() => launchAction(action.endpoint)}
                 disabled={
-                  status[action.endpoint] === "starting" ||
-                  status[action.endpoint] === "running"
+                  currentStatus === "starting" || currentStatus === "running"
                 }
-                className="camera-button"
+                className={getButtonClass(currentStatus)}
               >
-                {status[action.endpoint] === "idle" && (
+                {currentStatus === "idle" && (
                   <>
-                    Launch <ArrowRight size={18} />
+                    <span>Launch</span>
+                    <ArrowRight size={16} />
                   </>
                 )}
 
-                {status[action.endpoint] === "starting" && <>⏳ Starting...</>}
+                {currentStatus === "starting" && (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>Starting...</span>
+                  </>
+                )}
 
-                {status[action.endpoint] === "running" && <>🟢 Running</>}
+                {currentStatus === "running" && (
+                  <>
+                    <CheckCircle2 size={16} />
+                    <span>Running</span>
+                  </>
+                )}
 
-                {status[action.endpoint] === "failed" && <>🔴 Failed</>}
+                {currentStatus === "failed" && (
+                  <>
+                    <XCircle size={16} />
+                    <span>Failed</span>
+                  </>
+                )}
               </button>
             </div>
           );
