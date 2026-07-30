@@ -3,6 +3,15 @@
 import React, { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { PersonListManager } from "@/components/cameras/PersonListManager";
+import {
+  ArrowLeft,
+  Camera,
+  Link2,
+  MapPin,
+  ShieldCheck,
+  AlertTriangle,
+  Sliders,
+} from "lucide-react";
 
 interface Camera {
   id: string;
@@ -51,75 +60,128 @@ export default function CameraDetailPage({ params }: PageProps) {
 
   if (loading) {
     return (
-      <div className="spinner-loader">
-        <div className="spinner"></div>
-        <p className="monospace text-muted" style={{ fontSize: "0.75rem" }}>Querying camera details...</p>
+      <div className="nebula-wrapper flex-center">
+        <div className="nebula-spotlight"></div>
+        <div className="nebula-loader">
+          <div className="spinner"></div>
+          <p>Querying stream details...</p>
+        </div>
       </div>
     );
   }
 
   if (error || !camera) {
     return (
-      <div className="cameras-page-container flex flex-column gap-md animate-enter">
-        <div className="dashboard-header">
-          <h1 className="dashboard-title">Detailed Error</h1>
+      <div className="nebula-wrapper">
+        <div className="nebula-spotlight"></div>
+        <div className="nebula-container">
+          <div className="nebula-header">
+            <span className="nebula-badge">ERROR</span>
+            <h1>Detailed Error</h1>
+          </div>
+
+          <div className="nebula-banner banner-error margin-bottom-lg">
+            <AlertTriangle size={16} />
+            <span>{error || "Stream configurations not resolved."}</span>
+          </div>
+
+          <Link href="/cameras" className="nebula-pill-btn btn-secondary">
+            <ArrowLeft size={15} />
+            <span>Back to Camera List</span>
+          </Link>
         </div>
-        <div className="form-error-banner monospace">
-          {error || "Stream configurations not resolved."}
-        </div>
-        <Link href="/cameras" className="btn border-button align-self-start" style={{ width: "fit-content" }}>
-          Back to Camera List
-        </Link>
       </div>
     );
   }
 
   return (
-    <div className="cameras-page-container flex flex-column gap-md animate-enter">
-      {/* Page Header */}
-      <div className="dashboard-header">
-        <div>
-          <h1 className="dashboard-title">Configure Stream</h1>
-          <p className="section-sublabel">Define per-camera detection rules for Blacklists and Whitelists.</p>
-        </div>
-        
-        <div className="feed-actions-bar">
-          <Link href="/cameras" className="btn border-button">
-            Back to Cameras
-          </Link>
-        </div>
-      </div>
+    <div className="nebula-wrapper">
+      {/* Overhead Spotlight Element (Flush Top) */}
+      <div className="nebula-spotlight"></div>
 
-      {/* Stream Info Cards */}
-      <div className="bg-glass p-md flex flex-column gap-sm" style={{ padding: "1.25rem" }}>
-        <h3 className="monospace font-bold text-cyan" style={{ fontSize: "0.85rem", textTransform: "uppercase" }}>
-          Channel Information
-        </h3>
-        <div className="monospace" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", fontSize: "0.75rem" }}>
-          <div>
-            <span className="text-muted">Channel Name: </span>
-            <span className="text-cyan font-bold">{camera.name}</span>
-          </div>
-          <div>
-            <span className="text-muted">RTSP URL: </span>
-            <span className="text-secondary" style={{ wordBreak: "break-all" }}>{camera.rtspUrl}</span>
-          </div>
-          <div>
-            <span className="text-muted">Location Notes: </span>
-            <span className="text-secondary">{camera.location || "N/A"}</span>
-          </div>
-          <div>
-            <span className="text-muted">Channel Status: </span>
-            <span className={camera.isActive ? "text-green" : "text-red"}>
-              {camera.isActive ? "ACTIVE & SCANNING" : "DISABLED"}
-            </span>
+      <div className="nebula-container">
+        {/* Header */}
+        <div className="nebula-header">
+          <span className="nebula-badge">CHANNEL CONFIGURATION</span>
+          <h1>Configure Stream</h1>
+          <p>Define per-camera detection rules for Blacklists and Whitelists.</p>
+
+          <div className="nebula-header-actions">
+            <Link href="/cameras" className="nebula-pill-btn btn-secondary">
+              <ArrowLeft size={15} />
+              <span>Back to Cameras</span>
+            </Link>
           </div>
         </div>
-      </div>
 
-      {/* Rules Manager Dual Pane */}
-      <div className="bg-glass p-md" style={{ padding: "1.25rem" }}>
-        <PersonListManager cameraId={camera.id} />
+        {/* Channel Details Card */}
+        <div className="nebula-card margin-bottom-lg">
+          <div className="nebula-card-header">
+            <div className="nebula-icon-wrap">
+              <Camera size={20} />
+            </div>
+            <div>
+              <h2>{camera.name}</h2>
+              <p>Stream Telemetry & Connection Status</p>
+            </div>
+          </div>
+
+          <div className="nebula-stats-list detail-grid">
+            <div className="nebula-stat-item">
+              <span className="stat-label">
+                <Camera size={12} /> CHANNEL NAME
+              </span>
+              <span className="stat-value highlight">{camera.name}</span>
+            </div>
+
+            <div className="nebula-stat-item">
+              <span className="stat-label">
+                <Link2 size={12} /> RTSP URL
+              </span>
+              <span className="stat-value text-truncate" title={camera.rtspUrl}>
+                {camera.rtspUrl}
+              </span>
+            </div>
+
+            <div className="nebula-stat-item">
+              <span className="stat-label">
+                <MapPin size={12} /> LOCATION
+              </span>
+              <span className="stat-value">{camera.location || "Unspecified"}</span>
+            </div>
+
+            <div className="nebula-stat-item">
+              <span className="stat-label">
+                <ShieldCheck size={12} /> CHANNEL STATUS
+              </span>
+              <span
+                className={`status-pill ${
+                  camera.isActive ? "connected" : "status-off"
+                }`}
+              >
+                <span className="status-dot"></span>
+                {camera.isActive ? "ACTIVE & SCANNING" : "DISABLED"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Rules Manager Dual Pane Card */}
+        <div className="nebula-card">
+          <div className="nebula-card-header">
+            <div className="nebula-icon-wrap">
+              <Sliders size={20} />
+            </div>
+            <div>
+              <h2>Detection Rule Policies</h2>
+              <p>Assign target identity groups to this specific camera stream.</p>
+            </div>
+          </div>
+
+          <div className="nebula-manager-wrapper">
+            <PersonListManager cameraId={camera.id} />
+          </div>
+        </div>
       </div>
     </div>
   );

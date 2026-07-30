@@ -2,6 +2,21 @@
 
 import React, { useState, useEffect } from "react";
 import { useMqttContext } from "@/providers/MqttProvider";
+import {
+  Network,
+  Activity,
+  Trash2,
+  Volume2,
+  VolumeX,
+  RefreshCw,
+  Save,
+  CheckCircle2,
+  AlertTriangle,
+  Server,
+  Radio,
+  ArrowRight,
+  ShieldAlert,
+} from "lucide-react";
 
 interface DatabaseStats {
   alertsCount: number;
@@ -11,18 +26,23 @@ interface DatabaseStats {
 }
 
 export default function SettingsPage() {
-  const { mqttStatus, stats, isSoundEnabled, setIsSoundEnabled, triggerReconnect, clearDatabase } = useMqttContext();
-  
-  // Settings values (cached locally in localStorage)
+  const {
+    mqttStatus,
+    stats,
+    isSoundEnabled,
+    setIsSoundEnabled,
+    triggerReconnect,
+    clearDatabase,
+  } = useMqttContext();
+
   const [mqttUrl, setMqttUrl] = useState("mqtt://localhost:1883");
   const [syncUrl, setSyncUrl] = useState("http://localhost:8766");
-  
-  // Database counts stats
+
   const [dbStats, setDbStats] = useState<DatabaseStats>({
     alertsCount: 0,
     camerasCount: 0,
     peopleCount: 0,
-    rulesCount: 0
+    rulesCount: 0,
   });
 
   const [saving, setSaving] = useState(false);
@@ -31,15 +51,12 @@ export default function SettingsPage() {
 
   const loadDbStats = async () => {
     try {
-      // Load camera count
       const camerasRes = await fetch("/api/cameras");
       const camerasJson = await camerasRes.json();
-      
-      // Load people count
+
       const peopleRes = await fetch("/api/people");
       const peopleJson = await peopleRes.json();
 
-      // Load rules count
       const rulesRes = await fetch("/api/rules");
       const rulesJson = await rulesRes.json();
 
@@ -47,7 +64,7 @@ export default function SettingsPage() {
         alertsCount: stats.totalAlerts,
         camerasCount: camerasJson.success ? camerasJson.data.length : 0,
         peopleCount: peopleJson.success ? peopleJson.data.length : 0,
-        rulesCount: rulesJson.success ? rulesJson.data.length : 0
+        rulesCount: rulesJson.success ? rulesJson.data.length : 0,
       });
     } catch (e) {
       console.warn("Failed to load db metrics.");
@@ -55,7 +72,6 @@ export default function SettingsPage() {
   };
 
   useEffect(() => {
-    // Read cached configurations on mount
     const savedMqtt = localStorage.getItem("setting_mqtt_url");
     if (savedMqtt) setMqttUrl(savedMqtt);
 
@@ -74,7 +90,7 @@ export default function SettingsPage() {
     try {
       localStorage.setItem("setting_mqtt_url", mqttUrl);
       localStorage.setItem("setting_sync_url", syncUrl);
-      setSuccess("Configurations updated successfully! Make sure to reload the standalone MQTT daemon if you changed the broker URL.");
+      setSuccess("Configurations updated successfully!");
     } catch (e) {
       setError("Failed to save settings locally.");
     } finally {
@@ -83,7 +99,12 @@ export default function SettingsPage() {
   };
 
   const handleClear = async () => {
-    if (!confirm("Are you sure you want to clear the logs history database? This action is permanent!")) return;
+    if (
+      !confirm(
+        "Are you sure you want to clear the logs history database? This action is permanent!"
+      )
+    )
+      return;
     try {
       await clearDatabase();
       loadDbStats();
@@ -95,135 +116,173 @@ export default function SettingsPage() {
 
   const handleManualReconnect = () => {
     triggerReconnect();
-    setSuccess("Reconnection request dispatched to Server-Sent Events stream.");
+    setSuccess("Reconnection request dispatched to SSE stream.");
   };
 
   return (
-    <div className="settings-page-container flex flex-column gap-md animate-enter">
-      {/* Page Header */}
-      <div className="dashboard-header">
-        <div>
-          <h1 className="dashboard-title">Portal Settings</h1>
-          <p className="section-sublabel">Manage communication brokers, audio toggles, and diagnostics.</p>
-        </div>
-      </div>
+    <div className="nebula-wrapper">
+      {/* Nebula Top Spotlight Light Source */}
+      <div className="nebula-spotlight"></div>
 
-      {error && <div className="form-error-banner monospace">⚠️ {error}</div>}
-      {success && <div className="form-success-banner monospace">✅ {success}</div>}
-
-      {/* Grid Settings Layout */}
-      <div className="settings-grid">
-        {/* Left Card: Connection configs */}
-        <div className="settings-card bg-glass flex flex-column gap-sm" style={{ padding: "1.25rem" }}>
-          <h3 className="font-bold text-cyan" style={{ fontSize: "0.9rem", textTransform: "uppercase" }}>
-            Network configuration
-          </h3>
-          <p className="text-muted" style={{ fontSize: "0.7rem", marginTop: "-0.25rem" }}>
-            Define address locations of daemon brokers and python encodings services.
+      <div className="nebula-container">
+        {/* Header */}
+        <div className="nebula-header">
+          <span className="nebula-badge">SYSTEM PREFERENCES</span>
+          <h1>Portal Settings</h1>
+          <p>
+            Configure system network brokers, live stream telemetry, and system actions.
           </p>
-
-          <form onSubmit={handleSaveSettings} className="flex flex-column gap-md" style={{ marginTop: "0.5rem" }}>
-            <div className="filter-input-wrap">
-              <label className="monospace text-muted" style={{ fontSize: "0.7rem", marginBottom: "0.25rem", display: "block" }}>
-                MQTT Broker TCP URL (Daemon subscriber link)
-              </label>
-              <input
-                type="text"
-                value={mqttUrl}
-                onChange={(e) => setMqttUrl(e.target.value)}
-                placeholder="mqtt://localhost:1883"
-                className="input-field"
-                required
-              />
-            </div>
-
-            <div className="filter-input-wrap">
-              <label className="monospace text-muted" style={{ fontSize: "0.7rem", marginBottom: "0.25rem", display: "block" }}>
-                Python REST Sync Server URL
-              </label>
-              <input
-                type="text"
-                value={syncUrl}
-                onChange={(e) => setSyncUrl(e.target.value)}
-                placeholder="http://localhost:8766"
-                className="input-field"
-                required
-              />
-            </div>
-
-            <button type="submit" className="btn btn-primary" disabled={saving} style={{ alignSelf: "flex-end" }}>
-              {saving ? "Saving..." : "Save Configuration"}
-            </button>
-          </form>
         </div>
 
-        {/* Right Card: Diagnostics & Purge Actions */}
-        <div className="flex flex-column gap-md">
-          {/* Connection diagnostics */}
-          <div className="settings-card bg-glass flex flex-column gap-sm" style={{ padding: "1.25rem" }}>
-            <h3 className="monospace font-bold text-cyan" style={{ fontSize: "0.9rem", textTransform: "uppercase" }}>
-              Broker Diagnostics
-            </h3>
-            
-            <div className="monospace" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "0.5rem" }}>
-              <div className="diagnostic-row">
-                <span className="text-muted">SSE Stream Status:</span>
-                <span className={mqttStatus === "connected" ? "text-green font-bold" : mqttStatus === "reconnecting" ? "text-yellow font-bold" : "text-red font-bold"}>
+        {/* Banners */}
+        {error && (
+          <div className="nebula-banner banner-error">
+            <AlertTriangle size={16} />
+            <span>{error}</span>
+          </div>
+        )}
+        {success && (
+          <div className="nebula-banner banner-success">
+            <CheckCircle2 size={16} />
+            <span>{success}</span>
+          </div>
+        )}
+
+        {/* Cards Grid */}
+        <div className="nebula-grid">
+          {/* Left Card: Network Config */}
+          <div className="nebula-card span-7">
+            <div className="nebula-card-header">
+              <div className="nebula-icon-wrap">
+                <Network size={20} />
+              </div>
+              <div>
+                <h2>Network Configuration</h2>
+                <p>Daemon broker links and python REST endpoints.</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveSettings} className="nebula-form">
+              <div className="nebula-input-group">
+                <label>
+                  <Server size={13} /> MQTT BROKER TCP URL
+                </label>
+                <input
+                  type="text"
+                  value={mqttUrl}
+                  onChange={(e) => setMqttUrl(e.target.value)}
+                  placeholder="mqtt://localhost:1883"
+                  className="nebula-input"
+                  required
+                />
+              </div>
+
+              <div className="nebula-input-group">
+                <label>
+                  <Radio size={13} /> PYTHON REST SYNC SERVER URL
+                </label>
+                <input
+                  type="text"
+                  value={syncUrl}
+                  onChange={(e) => setSyncUrl(e.target.value)}
+                  placeholder="http://localhost:8766"
+                  className="nebula-input"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="nebula-pill-btn btn-primary"
+                disabled={saving}
+              >
+                <span>{saving ? "Saving..." : "Save Configuration"}</span>
+                <ArrowRight size={15} />
+              </button>
+            </form>
+          </div>
+
+          {/* Right Card: Telemetry & Stats */}
+          <div className="nebula-card span-5">
+            <div className="nebula-card-header">
+              <div className="nebula-icon-wrap">
+                <Activity size={20} />
+              </div>
+              <div>
+                <h2>Broker Diagnostics</h2>
+                <p>Live stream telemetry and cached metrics.</p>
+              </div>
+            </div>
+
+            <div className="nebula-stats-list">
+              <div className="nebula-stat-item">
+                <span className="stat-label">SSE STREAM STATUS</span>
+                <span className={`status-pill ${mqttStatus}`}>
+                  <span className="status-dot"></span>
                   {mqttStatus.toUpperCase()}
                 </span>
               </div>
-              <div className="diagnostic-row">
-                <span className="text-muted">Notification Sounds:</span>
-                <span>{isSoundEnabled ? "ENABLED" : "MUTED"}</span>
-              </div>
-              <div className="diagnostic-row">
-                <span className="text-muted">Registered Cameras:</span>
-                <span>{dbStats.camerasCount} streams</span>
-              </div>
-              <div className="diagnostic-row">
-                <span className="text-muted">Rule Configurations:</span>
-                <span>{dbStats.rulesCount} policies</span>
-              </div>
-              <div className="diagnostic-row" style={{ borderBottom: "none" }}>
-                <span className="text-muted">Alert History Count:</span>
-                <span>{dbStats.alertsCount} logs</span>
+
+              <div className="nebula-stat-item">
+                <span className="stat-label">AUDIO FEEDBACK</span>
+                <span className="stat-value">
+                  {isSoundEnabled ? "ENABLED" : "MUTED"}
+                </span>
               </div>
 
-              <div className="flex gap-sm justify-between" style={{ marginTop: "0.75rem" }}>
-                <button
-                  onClick={() => setIsSoundEnabled(!isSoundEnabled)}
-                  className="btn border-button"
-                  style={{ fontSize: "0.65rem", padding: "0.35rem 0.65rem", flex: 1 }}
-                >
-                  {isSoundEnabled ? "Mute sound" : "Unmute sound"}
-                </button>
-                <button
-                  onClick={handleManualReconnect}
-                  className="btn btn-primary"
-                  style={{ fontSize: "0.65rem", padding: "0.35rem 0.65rem", flex: 1 }}
-                >
-                  Force Reconnect
-                </button>
+              <div className="nebula-stat-item">
+                <span className="stat-label">REGISTERED STREAMS</span>
+                <span className="stat-value">{dbStats.camerasCount} STREAMS</span>
               </div>
+
+              <div className="nebula-stat-item">
+                <span className="stat-label">RULE POLICIES</span>
+                <span className="stat-value">{dbStats.rulesCount} ACTIVE</span>
+              </div>
+
+              <div className="nebula-stat-item">
+                <span className="stat-label">ALERT RECORDS</span>
+                <span className="stat-value">{dbStats.alertsCount} LOGS</span>
+              </div>
+            </div>
+
+            <div className="nebula-actions-row">
+              <button
+                onClick={() => setIsSoundEnabled(!isSoundEnabled)}
+                className="nebula-pill-btn btn-secondary"
+              >
+                {isSoundEnabled ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                <span>{isSoundEnabled ? "Mute Sound" : "Unmute Sound"}</span>
+              </button>
+
+              <button
+                onClick={handleManualReconnect}
+                className="nebula-pill-btn btn-secondary"
+              >
+                <RefreshCw size={15} />
+                <span>Reconnect</span>
+              </button>
             </div>
           </div>
 
-          {/* Database maintenance */}
-          <div className="settings-card bg-glass flex flex-column gap-sm" style={{ padding: "1.25rem" }}>
-            <h3 className="monospace font-bold text-red" style={{ fontSize: "0.9rem", textTransform: "uppercase" }}>
-              System Maintenance
-            </h3>
-            <p className="monospace text-muted" style={{ fontSize: "0.7rem", marginTop: "-0.25rem" }}>
-              Permanent database maintenance actions. Use caution.
-            </p>
-            
-            <button
-              onClick={handleClear}
-              className="btn border-button hover-bg-red"
-              style={{ borderColor: "rgba(255, 42, 95, 0.4)", color: "var(--accent-red)", marginTop: "0.5rem" }}
-            >
-              Purge Database Logs
-            </button>
+          {/* Danger Zone Full Span */}
+          <div className="nebula-card span-12 danger-card">
+            <div className="nebula-danger-row">
+              <div className="danger-text">
+                <div className="danger-header">
+                  <ShieldAlert size={20} className="danger-icon" />
+                  <h2>System Maintenance</h2>
+                </div>
+                <p>
+                  Irreversibly purge all stored detection logs and telemetry history.
+                </p>
+              </div>
+
+              <button onClick={handleClear} className="nebula-pill-btn btn-danger">
+                <Trash2 size={16} />
+                <span>Purge Database Logs</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

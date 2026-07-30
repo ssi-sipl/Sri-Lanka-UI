@@ -1,6 +1,19 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import {
+  Users,
+  UserPlus,
+  RefreshCw,
+  Trash2,
+  ShieldAlert,
+  CheckCircle2,
+  AlertTriangle,
+  FileText,
+  User,
+  Search,
+  Check,
+} from "lucide-react";
 
 interface Person {
   id: string;
@@ -21,6 +34,7 @@ export default function PeoplePage() {
   const [globalRules, setGlobalRules] = useState<Rule[]>([]);
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -65,7 +79,7 @@ export default function PeoplePage() {
       const res = await fetch("/api/people", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim().toLowerCase(), notes })
+        body: JSON.stringify({ name: name.trim().toLowerCase(), notes }),
       });
       const json = await res.json();
       if (json.success) {
@@ -91,25 +105,32 @@ export default function PeoplePage() {
       const res = await fetch("/api/people/sync");
       const json = await res.json();
       if (json.success) {
-        setSuccess(`Synchronization complete! Merged ${json.addedCount} new identities from Python encodings.`);
+        setSuccess(
+          `Synchronization complete! Merged ${json.addedCount} new identities from Python encodings.`
+        );
         loadData();
       } else {
         setError(json.error || "Synchronization request failed.");
       }
     } catch (e) {
-      setError("Failed to connect to synchronization API. Make sure Python REST API is running on port 8766.");
+      setError(
+        "Failed to connect to synchronization API. Make sure Python REST API is running on port 8766."
+      );
     } finally {
       setSyncing(false);
     }
   };
 
-  const handleToggleGlobalBlacklist = async (personId: string, currentRule: Rule | undefined) => {
+  const handleToggleGlobalBlacklist = async (
+    personId: string,
+    currentRule: Rule | undefined
+  ) => {
     setError("");
     try {
       if (currentRule) {
         // Delete global blacklist rule
         const res = await fetch(`/api/rules?id=${currentRule.id}`, {
-          method: "DELETE"
+          method: "DELETE",
         });
         const json = await res.json();
         if (json.success) {
@@ -125,8 +146,8 @@ export default function PeoplePage() {
           body: JSON.stringify({
             cameraId: null,
             personId,
-            listType: "BLACKLIST"
-          })
+            listType: "BLACKLIST",
+          }),
         });
         const json = await res.json();
         if (json.success && json.data) {
@@ -141,11 +162,16 @@ export default function PeoplePage() {
   };
 
   const handleDeletePerson = async (id: string, personName: string) => {
-    if (!confirm(`🚨 WARNING: Deleting "${personName.toUpperCase()}" will also remove all associated rules. Proceed?`)) return;
+    if (
+      !confirm(
+        `🚨 WARNING: Deleting "${personName.toUpperCase()}" will also remove all associated rules. Proceed?`
+      )
+    )
+      return;
 
     try {
       const res = await fetch(`/api/people?id=${id}`, {
-        method: "DELETE"
+        method: "DELETE",
       });
       const json = await res.json();
       if (json.success) {
@@ -158,134 +184,216 @@ export default function PeoplePage() {
     }
   };
 
+  const filteredPeople = people.filter(
+    (p) =>
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.notes && p.notes.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   if (loading) {
     return (
-      <div className="spinner-loader">
-        <div className="spinner"></div>
-        <p className="monospace text-muted" style={{ fontSize: "0.75rem" }}>Querying identity registry database...</p>
+      <div className="nebula-wrapper flex-center">
+        <div className="nebula-spotlight"></div>
+        <div className="nebula-loader">
+          <div className="spinner"></div>
+          <p>Querying identity registry database...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="people-page-container flex flex-column gap-md animate-enter">
-      {/* Page Header */}
-      <div className="dashboard-header">
-        <div>
-          <h1 className="dashboard-title">People Database</h1>
-          <p className="section-sublabel">Manage registered face profiles and configure global threat blacklists.</p>
+    <div className="nebula-wrapper">
+      {/* Overhead Spotlight Element (No Gap Top) */}
+      <div className="nebula-spotlight"></div>
+
+      <div className="nebula-container">
+        {/* Header */}
+        <div className="nebula-header">
+          <span className="nebula-badge">IDENTITY MANAGEMENT</span>
+          <h1>People Database</h1>
+          <p>
+            Manage registered face profiles, sync encodings, and configure global threat blacklists.
+          </p>
+
+          <div className="nebula-header-actions">
+            <button
+              onClick={handleSyncRegistry}
+              className="nebula-pill-btn btn-primary"
+              disabled={syncing}
+            >
+              <RefreshCw size={15} className={syncing ? "animate-spin" : ""} />
+              <span>{syncing ? "Syncing..." : "Sync Python Encodings"}</span>
+            </button>
+          </div>
         </div>
-        
-        <div className="feed-actions-bar">
-          <button
-            onClick={handleSyncRegistry}
-            className="btn btn-primary"
-            disabled={syncing}
-          >
-            {syncing ? "Syncing..." : "Sync Python Encodings"}
-          </button>
+
+        {/* Banners */}
+        {error && (
+          <div className="nebula-banner banner-error">
+            <AlertTriangle size={16} />
+            <span>{error}</span>
+          </div>
+        )}
+        {success && (
+          <div className="nebula-banner banner-success">
+            <CheckCircle2 size={16} />
+            <span>{success}</span>
+          </div>
+        )}
+
+        {/* Section 1: Registration Form Card */}
+        <div className="nebula-card margin-bottom-lg">
+          <div className="nebula-card-header">
+            <div className="nebula-icon-wrap">
+              <UserPlus size={20} />
+            </div>
+            <div>
+              <h2>Register Identity Profile</h2>
+              <p>Add new target profiles manually to the computer vision index.</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleRegisterPerson} className="nebula-form-row">
+            <div className="nebula-input-group flex-1">
+              <label>
+                <User size={12} /> IDENTITY NAME
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g., John Doe"
+                className="nebula-input"
+                required
+              />
+            </div>
+
+            <div className="nebula-input-group flex-2">
+              <label>
+                <FileText size={12} /> NOTES / DEPARTMENT
+              </label>
+              <input
+                type="text"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="e.g., IT Security Dept"
+                className="nebula-input"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="nebula-pill-btn btn-primary align-self-end"
+              disabled={submitting || !name}
+            >
+              <span>{submitting ? "Adding..." : "Create Profile"}</span>
+            </button>
+          </form>
+        </div>
+
+        {/* Section 2: Database Registry Table Card */}
+        <div className="nebula-card">
+          <div className="nebula-card-header justify-between flex-wrap gap-md">
+            <div className="flex align-center gap-sm">
+              <div className="nebula-icon-wrap">
+                <Users size={20} />
+              </div>
+              <div>
+                <h2>Identity Database Registry</h2>
+                <p>{filteredPeople.length} profiles registered in system</p>
+              </div>
+            </div>
+
+            {/* Filter / Search Bar */}
+            <div className="search-pill-input">
+              <Search size={15} className="search-icon" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search profiles or notes..."
+              />
+            </div>
+          </div>
+
+          {filteredPeople.length === 0 ? (
+            <div className="nebula-empty-state">
+              <ShieldAlert size={36} className="empty-icon" />
+              <h4>NO IDENTITIES FOUND</h4>
+              <p>
+                Click "Sync Python Encodings" or register a profile manually using the form above.
+              </p>
+            </div>
+          ) : (
+            <div className="nebula-table-wrapper">
+              <table className="nebula-table">
+                <thead>
+                  <tr>
+                    <th>IDENTITY NAME</th>
+                    <th>NOTES / DETAILS</th>
+                    <th className="text-center">GLOBAL BLACKLIST</th>
+                    <th className="text-right">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredPeople.map((person) => {
+                    const globalRule = globalRules.find(
+                      (r) => r.personId === person.id && r.listType === "BLACKLIST"
+                    );
+                    const isBlacklisted = !!globalRule;
+
+                    return (
+                      <tr
+                        key={person.id}
+                        className={isBlacklisted ? "row-blacklisted" : ""}
+                      >
+                        <td>
+                          <div className="identity-cell">
+                            <span className="identity-avatar">
+                              {person.name.charAt(0).toUpperCase()}
+                            </span>
+                            <span className="identity-name">{person.name}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="identity-notes">
+                            {person.notes || <span className="dim-text">No details added</span>}
+                          </span>
+                        </td>
+                        <td className="text-center">
+                          <label className="nebula-checkbox-container">
+                            <input
+                              type="checkbox"
+                              checked={isBlacklisted}
+                              onChange={() =>
+                                handleToggleGlobalBlacklist(person.id, globalRule)
+                              }
+                            />
+                            <span className="checkbox-custom">
+                              {isBlacklisted && <Check size={12} />}
+                            </span>
+                          </label>
+                        </td>
+                        <td className="text-right">
+                          <button
+                            onClick={() => handleDeletePerson(person.id, person.name)}
+                            className="nebula-pill-btn btn-danger-sm"
+                            title="Delete profile"
+                          >
+                            <Trash2 size={13} />
+                            <span>Delete</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
-
-      {error && <div className="form-error-banner monospace">⚠️ {error}</div>}
-      {success && <div className="form-success-banner monospace">✅ {success}</div>}
-
-      {/* Register Person Form */}
-      <form onSubmit={handleRegisterPerson} className="bg-glass p-md flex flex-column gap-sm" style={{ padding: "1.25rem" }}>
-        <h3 className="font-bold text-cyan" style={{ fontSize: "0.85rem", textTransform: "uppercase" }}>
-          Register Identity Profile
-        </h3>
-        
-        <div className="flex flex-wrap gap-md align-end" style={{ gap: "1rem" }}>
-          <div className="filter-input-wrap flex-grow-1" style={{ minWidth: "200px" }}>
-            <label className="monospace text-muted" style={{ fontSize: "0.7rem", marginBottom: "0.25rem", display: "block" }}>
-              Identity Name
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., John Doe"
-              className="input-field"
-              required
-            />
-          </div>
-
-          <div className="filter-input-wrap flex-grow-2" style={{ minWidth: "250px" }}>
-            <label className="monospace text-muted" style={{ fontSize: "0.7rem", marginBottom: "0.25rem", display: "block" }}>
-              Notes / Department
-            </label>
-            <input
-              type="text"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g., IT Security Dept"
-              className="input-field"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={submitting || !name}
-            style={{ height: "36px" }}
-          >
-            {submitting ? "Adding..." : "Create Profile"}
-          </button>
-        </div>
-      </form>
-
-      {/* Registry Table */}
-      <h3 className="section-title text-cyan" style={{ marginTop: "1rem" }}>Identity Database Registry</h3>
-      
-      {people.length === 0 ? (
-        <div className="empty-radar-wrap" style={{ borderStyle: "dashed", padding: "3rem" }}>
-          <h4 className="radar-label text-muted">NO IDENTITIES REGISTERED</h4>
-          <p className="radar-sublabel" style={{ marginBottom: "1rem" }}>Click "Sync Python Encodings" or add a profile manually.</p>
-        </div>
-      ) : (
-        <div className="table-responsive bg-glass">
-          <table className="people-table">
-            <thead>
-              <tr className="monospace">
-                <th>Identity Name</th>
-                <th>Notes / Details</th>
-                <th className="text-center" style={{ width: "160px" }}>Global Blacklist</th>
-                <th className="text-center" style={{ width: "100px" }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {people.map((person) => {
-                const globalRule = globalRules.find((r) => r.personId === person.id && r.listType === "BLACKLIST");
-                return (
-                  <tr key={person.id} className="monospace" style={{ background: globalRule ? "rgba(255, 42, 95, 0.02)" : "transparent" }}>
-                    <td className="font-bold text-cyan uppercase">{person.name}</td>
-                    <td className="text-secondary">{person.notes || <span className="text-muted italic">No details added</span>}</td>
-                    <td className="text-center">
-                      <input
-                        type="checkbox"
-                        checked={!!globalRule}
-                        onChange={() => handleToggleGlobalBlacklist(person.id, globalRule)}
-                        style={{ cursor: "pointer", width: "16px", height: "16px" }}
-                        title="Enforce global blacklist rule"
-                      />
-                    </td>
-                    <td className="text-center">
-                      <button
-                        onClick={() => handleDeletePerson(person.id, person.name)}
-                        className="btn border-button hover-bg-red"
-                        style={{ padding: "0.2rem 0.5rem", fontSize: "0.65rem", borderColor: "rgba(255, 42, 95, 0.3)" }}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
     </div>
   );
 }
