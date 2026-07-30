@@ -3105,3 +3105,619 @@ button, input, select, textarea {
 .rule-entry-item:last-child {
   border-bottom: none;
 }
+
+/* ==========================================
+   NEBULADEX ALERTS FEED PAGE THEME
+   ========================================== */
+
+/* Main Wrapper with flush-top spotlight */
+.nebula-wrapper {
+  position: relative;
+  background-color: #060608;
+  min-height: 100vh;
+  padding: 0 24px 40px 24px;
+  color: #ffffff;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Classification Pills */
+.nebula-filters-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nebula-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nebula-filter-group label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #6b7280;
+}
+
+.nebula-filter-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill-item {
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: #07080a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pill-item:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.pill-item.active {
+  background: #2a2b32;
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+.pill-item.active.blacklist {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #f87171;
+}
+
+.pill-item.active.weapon {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: #f59e0b;
+  color: #fbbf24;
+}
+
+.pill-item.active.unknown {
+  background: rgba(168, 85, 247, 0.2);
+  border-color: #a855f7;
+  color: #c084fc;
+}
+
+.pill-item.active.whitelist {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: #22c55e;
+  color: #4ade80;
+}
+
+/* Custom Select Control */
+.nebula-select {
+  width: 100%;
+  height: 46px;
+  background: #07080a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 0 16px;
+  color: #ffffff;
+  font-size: 13.5px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nebula-select:focus {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: #0c0d12;
+}
+
+.nebula-select option {
+  background: #0d0e12;
+  color: #ffffff;
+}
+
+/* Input Clear Button wrapper */
+.nebula-input-with-clear {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.nebula-input-with-clear .clear-btn {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nebula-input-with-clear .clear-btn:hover {
+  color: #ffffff;
+}
+
+/* Alert Card Grid */
+.nebula-alerts-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .nebula-alerts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.margin-top-md {
+  margin-top: 12px;
+}
+
+/* ==========================================
+   NEBULADEX ALERT CARD COMPONENT THEME
+   ========================================== */
+
+.nebula-alert-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #07080a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 14px;
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+.nebula-alert-card:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.nebula-alert-card.acknowledged {
+  opacity: 0.45;
+  border-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Category Specific Accent Borders */
+.nebula-alert-card.card-blacklist {
+  border-left: 3px solid #ef4444;
+}
+
+.nebula-alert-card.card-weapon {
+  border-left: 3px solid #f59e0b;
+}
+
+.nebula-alert-card.card-unknown {
+  border-left: 3px solid #a855f7;
+}
+
+.nebula-alert-card.card-whitelist {
+  border-left: 3px solid #22c55e;
+}
+
+/* Crop Image Frame */
+.alert-crop-frame {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #000000;
+  flex-shrink: 0;
+}
+
+.alert-crop-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Alert Content */
+.alert-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.alert-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.alert-identity {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.alert-pills-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Badges & Category Pills */
+.cat-pill {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  letter-spacing: 0.5px;
+}
+
+.badge-blacklist {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.badge-weapon {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.badge-unknown {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+.badge-whitelist {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.score-pill {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.score-pill.score-high { color: #4ade80; }
+.score-pill.score-medium { color: #fbbf24; }
+.score-pill.score-low { color: #f87171; }
+
+/* Metadata Row */
+.alert-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.meta-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: #8a8d9b;
+}
+
+.meta-icon {
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.meta-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
+.time-absolute {
+  color: #6b7280;
+  font-size: 10.5px;
+}
+
+/* Action Slot & Acknowledge Controls */
+.alert-action-slot {
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.nebula-ack-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nebula-ack-btn:hover {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+  transform: scale(1.05);
+}
+
+.nebula-ack-indicator {
+  color: #4ade80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================
+   NEBULADEX CONNECTION BADGE & STATUS PILLS
+   ========================================== */
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 9999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* Connected State */
+.status-pill.connected {
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.status-pill.connected .status-dot {
+  background: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+}
+
+/* Disconnected State */
+.status-pill.status-off {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.status-pill.status-off .status-dot {
+  background: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+}
+
+/* Reconnecting State */
+.status-pill.reconnecting {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.status-pill.reconnecting .status-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.8);
+  animation: pulse-glow 1.2s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+/* ==========================================
+   NEBULADEX SOUND TOGGLE COMPONENT THEME
+   ========================================== */
+
+/* Active Audio Pill State */
+.nebula-pill-btn.btn-audio-active {
+  background: rgba(34, 211, 238, 0.12);
+  border-color: rgba(34, 211, 238, 0.3);
+  color: #22d3ee;
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.15);
+}
+
+.nebula-pill-btn.btn-audio-active:hover {
+  background: rgba(34, 211, 238, 0.22);
+  border-color: #22d3ee;
+  color: #ffffff;
+}
+
+/* Muted Audio Pill State */
+.nebula-pill-btn.btn-audio-muted {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #6b7280;
+}
+
+.nebula-pill-btn.btn-audio-muted:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #d1d5db;
+}
+
+/* ==========================================
+   NEBULADEX DASHBOARD & BENTO METRICS THEME
+   ========================================== */
+
+/* Main Wrapper with flush-top spotlight */
+.nebula-wrapper {
+  position: relative;
+  background-color: #060608;
+  min-height: 100vh;
+  padding: 0 24px 40px 24px;
+  color: #ffffff;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Bento Metrics Grid */
+.nebula-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .nebula-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .nebula-metrics-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* Metric Cards */
+.nebula-metric-card {
+  background: #07080a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.25s ease;
+}
+
+.nebula-metric-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.metric-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #6b7280;
+}
+
+.metric-icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+}
+
+.metric-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metric-number {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.metric-subtext {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* Card Variants */
+.nebula-metric-card.metric-danger {
+  border-left: 3px solid #ef4444;
+}
+
+.nebula-metric-card.metric-danger .metric-number {
+  color: #f87171;
+}
+
+.nebula-metric-card.metric-danger .metric-icon-wrap {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+
+.nebula-metric-card.metric-warning {
+  border-left: 3px solid #f59e0b;
+}
+
+.nebula-metric-card.metric-warning .metric-number {
+  color: #fbbf24;
+}
+
+.nebula-metric-card.metric-warning .metric-icon-wrap {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+.nebula-metric-card.metric-success {
+  border-left: 3px solid #22c55e;
+}
+
+.nebula-metric-card.metric-success .metric-number {
+  color: #4ade80;
+}
+
+.nebula-metric-card.metric-success .metric-icon-wrap {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.25);
+  color: #4ade80;
+}
+
+/* Map Slot Wrapper */
+.nebula-map-container {
+  width: 100%;
+  margin-top: 8px;
+  border-radius: 12px;
+  overflow: hidden;
+}

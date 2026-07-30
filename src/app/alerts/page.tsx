@@ -3,8 +3,19 @@
 import React, { useState, useEffect } from "react";
 import { useMqttContext } from "@/providers/MqttProvider";
 import { AlertCard } from "@/components/AlertCard";
+import {
+  Bell,
+  CheckCheck,
+  Trash2,
+  Filter,
+  Search,
+  Camera,
+  X,
+  ShieldAlert,
+  Radio,
+} from "lucide-react";
 
-interface Camera {
+interface CameraItem {
   id: string;
   name: string;
   rtspUrl: string;
@@ -12,12 +23,12 @@ interface Camera {
 
 export default function AlertsFeedPage() {
   const { alerts, mqttStatus, acknowledgeAll, clearDatabase } = useMqttContext();
-  
+
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
   const [selectedSource, setSelectedSource] = useState<string>("ALL");
   const [searchName, setSearchName] = useState<string>("");
-  const [cameras, setCameras] = useState<Camera[]>([]);
+  const [cameras, setCameras] = useState<CameraItem[]>([]);
 
   // Actions states
   const [isAckingAll, setIsAckingAll] = useState(false);
@@ -50,7 +61,12 @@ export default function AlertsFeedPage() {
   };
 
   const handlePurge = async () => {
-    if (!confirm("🚨 WARNING: This will permanently delete all stored alert records. Proceed?")) return;
+    if (
+      !confirm(
+        "🚨 WARNING: This will permanently delete all stored alert records. Proceed?"
+      )
+    )
+      return;
     setIsPurging(true);
     try {
       await clearDatabase();
@@ -71,149 +87,161 @@ export default function AlertsFeedPage() {
     }
     // 3. Filter by search name queries
     if (searchName.trim()) {
-      const match = alert.name.toLowerCase().includes(searchName.toLowerCase().trim());
+      const match = alert.name
+        .toLowerCase()
+        .includes(searchName.toLowerCase().trim());
       if (!match) return false;
     }
     return true;
   });
 
   return (
-    <div className="alerts-page-container flex flex-column gap-md animate-enter">
-      {/* Page Header */}
-      <div className="dashboard-header">
-        <div>
-          <h1 className="dashboard-title">Audit Alert Feed</h1>
-          <p className="section-sublabel">View and categorize incoming detection signals in real-time.</p>
-        </div>
-        
-        <div className="feed-actions-bar">
-          <button
-            onClick={handleAcknowledgeAll}
-            className="btn btn-primary"
-            disabled={isAckingAll || alerts.length === 0}
-          >
-            {isAckingAll ? "Acknowledge..." : "Dismiss All"}
-          </button>
-          <button
-            onClick={handlePurge}
-            className="btn border-button hover-bg-red"
-            style={{ borderColor: "rgba(255, 42, 95, 0.4)" }}
-            disabled={isPurging || alerts.length === 0}
-          >
-            {isPurging ? "Purging..." : "Clear Logs"}
-          </button>
-        </div>
-      </div>
+    <div className="nebula-wrapper">
+      {/* Overhead Spotlight Element (Flush Top) */}
+      <div className="nebula-spotlight"></div>
 
-      {/* Filter panel */}
-      <div className="filters-panel bg-glass flex flex-column gap-md">
-        <div className="filters-row-main flex justify-between gap-md">
-          {/* Category filter pills */}
-          <div className="category-filters-group">
-            <span className="monospace text-muted" style={{ fontSize: "0.7rem", marginBottom: "0.25rem", display: "block" }}>
-              Filter By Classification
-            </span>
-            <div className="filter-pills">
-              <button
-                onClick={() => setSelectedCategory("ALL")}
-                className={`filter-pill ${selectedCategory === "ALL" ? "active" : ""}`}
-              >
-                ALL
-              </button>
-              <button
-                onClick={() => setSelectedCategory("BLACKLIST")}
-                className={`filter-pill pill-blacklist ${selectedCategory === "BLACKLIST" ? "active" : ""}`}
-              >
-                BLACKLIST
-              </button>
-              <button
-                onClick={() => setSelectedCategory("WEAPON")}
-                className={`filter-pill pill-weapon ${selectedCategory === "WEAPON" ? "active" : ""}`}
-              >
-                WEAPON
-              </button>
-              <button
-                onClick={() => setSelectedCategory("UNKNOWN")}
-                className={`filter-pill pill-unknown ${selectedCategory === "UNKNOWN" ? "active" : ""}`}
-              >
-                UNKNOWN
-              </button>
-              <button
-                onClick={() => setSelectedCategory("WHITELIST")}
-                className={`filter-pill pill-whitelist ${selectedCategory === "WHITELIST" ? "active" : ""}`}
-              >
-                WHITELIST
-              </button>
-            </div>
-          </div>
-        </div>
+      <div className="nebula-container">
+        {/* Header */}
+        <div className="nebula-header">
+          <span className="nebula-badge">REAL-TIME AUDIT LOGS</span>
+          <h1>Audit Alert Feed</h1>
+          <p>View and categorize incoming detection signals in real-time.</p>
 
-        <div className="filters-row-secondary flex gap-md">
-          {/* Camera selector dropdown */}
-          <div className="filter-input-wrap flex-grow-1" style={{ minWidth: "200px" }}>
-            <span className="monospace text-muted" style={{ fontSize: "0.7rem", marginBottom: "0.25rem", display: "block" }}>
-              Filter By Camera Channel
-            </span>
-            <select
-              value={selectedSource}
-              onChange={(e) => setSelectedSource(e.target.value)}
-              className="select-field"
+          <div className="nebula-header-actions gap-sm">
+            <button
+              onClick={handleAcknowledgeAll}
+              className="nebula-pill-btn btn-primary"
+              disabled={isAckingAll || alerts.length === 0}
             >
-              <option value="ALL">ALL CAMERAS</option>
-              {cameras.map((c) => (
-                <option key={c.id} value={c.rtspUrl}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+              <CheckCheck size={15} />
+              <span>{isAckingAll ? "Dismissing..." : "Dismiss All"}</span>
+            </button>
+
+            <button
+              onClick={handlePurge}
+              className="nebula-pill-btn btn-danger"
+              disabled={isPurging || alerts.length === 0}
+            >
+              <Trash2 size={15} />
+              <span>{isPurging ? "Purging..." : "Clear Logs"}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Filters Card */}
+        <div className="nebula-card margin-bottom-lg">
+          <div className="nebula-card-header">
+            <div className="nebula-icon-wrap">
+              <Filter size={20} />
+            </div>
+            <div>
+              <h2>Filter Signals</h2>
+              <p>Narrow down detection history by category, stream, or name.</p>
+            </div>
           </div>
 
-          {/* Name search field */}
-          <div className="filter-input-wrap flex-grow-2" style={{ minWidth: "250px" }}>
-            <span className="monospace text-muted" style={{ fontSize: "0.7rem", marginBottom: "0.25rem", display: "block" }}>
-              Search Registered Name
-            </span>
-            <div className="search-field-container">
-              <input
-                type="text"
-                value={searchName}
-                onChange={(e) => setSearchName(e.target.value)}
-                placeholder="Type profile identity name..."
-                className="input-field"
-              />
-              {searchName && (
-                <button
-                  onClick={() => setSearchName("")}
-                  className="clear-input-btn"
-                  title="Clear input"
+          <div className="nebula-filters-content">
+            {/* Classification Pills Row */}
+            <div className="nebula-filter-group">
+              <label>CLASSIFICATION</label>
+              <div className="nebula-filter-pills">
+                {["ALL", "BLACKLIST", "WEAPON", "UNKNOWN", "WHITELIST"].map(
+                  (cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`pill-item ${
+                        selectedCategory === cat ? "active" : ""
+                      } ${cat.toLowerCase()}`}
+                    >
+                      {cat}
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
+
+            {/* Dropdown and Search Input Row */}
+            <div className="nebula-form-row margin-top-md">
+              <div className="nebula-input-group flex-1">
+                <label>
+                  <Camera size={12} /> CAMERA CHANNEL
+                </label>
+                <select
+                  value={selectedSource}
+                  onChange={(e) => setSelectedSource(e.target.value)}
+                  className="nebula-select"
                 >
-                  &times;
-                </button>
-              )}
+                  <option value="ALL">ALL CAMERAS</option>
+                  {cameras.map((c) => (
+                    <option key={c.id} value={c.rtspUrl}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="nebula-input-group flex-2">
+                <label>
+                  <Search size={12} /> IDENTITY SEARCH
+                </label>
+                <div className="nebula-input-with-clear">
+                  <input
+                    type="text"
+                    value={searchName}
+                    onChange={(e) => setSearchName(e.target.value)}
+                    placeholder="Search profile identity..."
+                    className="nebula-input"
+                  />
+                  {searchName && (
+                    <button
+                      onClick={() => setSearchName("")}
+                      className="clear-btn"
+                      title="Clear search"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Alerts Feed Scroll Area */}
-      <div className="alerts-feed-container flex flex-column gap-sm">
-        <div className="feed-status-header monospace text-muted">
-          <span>
-            Showing {filteredAlerts.length} of {alerts.length} events
-          </span>
-          <span className="text-cyan">
-            SSE Connection: {mqttStatus.toUpperCase()}
-          </span>
-        </div>
+        {/* Alerts Feed Grid Container */}
+        <div className="nebula-card">
+          <div className="nebula-card-header justify-between flex-wrap gap-md">
+            <div className="flex align-center gap-sm">
+              <div className="nebula-icon-wrap">
+                <Bell size={20} />
+              </div>
+              <div>
+                <h2>Alert Stream History</h2>
+                <p>
+                  Showing {filteredAlerts.length} of {alerts.length} total events
+                </p>
+              </div>
+            </div>
 
-        <div className="alerts-feed-scroll scrollable-area">
+            <div className="flex align-center gap-xs">
+              <Radio size={12} className="text-cyan" />
+              <span className={`status-pill ${mqttStatus}`}>
+                <span className="status-dot"></span>
+                SSE: {mqttStatus.toUpperCase()}
+              </span>
+            </div>
+          </div>
+
           {filteredAlerts.length === 0 ? (
-            <div className="empty-radar-wrap">
-              <h4 className="radar-label text-muted">NO EVENTS MATCH FILTER</h4>
-              <p className="radar-sublabel">Change filter classifications or input name terms to inspect stored audits.</p>
+            <div className="nebula-empty-state">
+              <ShieldAlert size={36} className="empty-icon" />
+              <h4>NO MATCHING AUDIT SIGNALS</h4>
+              <p>
+                Adjust filter classifications, camera channels, or clear search queries to view stored detections.
+              </p>
             </div>
           ) : (
-            <div className="alerts-cards-grid">
+            <div className="nebula-alerts-grid">
               {filteredAlerts.map((alert, idx) => (
                 <AlertCard key={alert.id || idx} alert={alert} />
               ))}
