@@ -1,0 +1,816 @@
+openapi: 3.0.3
+info:
+  title: Sri Lanka Security System & Face Recognition Engine API
+  description: |
+    Complete API Specification for Sri Lanka Security System & Face Recognition Platform.
+    Includes Next.js Web UI API endpoints, Python Engine HTTP REST service, and MQTT message payload definitions for real-time security alerts.
+
+    MQTT Topic Specifications:
+    - Broker: mqtt://localhost:1883
+    - Topic: security/alerts
+    - Payloads: MqttFaceAlertPayload, MqttWeaponAlertPayload
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Next.js Web UI Application Server
+  - url: http://localhost:8766
+    description: Python Engine Embedded REST Service
+  - url: mqtt://localhost:1883
+    description: Mosquitto MQTT Broker
+
+paths:
+  # ==========================================
+  # SECURITY ALERTS API
+  # ==========================================
+  /api/alerts:
+    get:
+      summary: Retrieve historical alert logs
+      description: Returns a list of processed alert records saved in the SQLite database with optional filtering and search.
+      tags:
+        - Security Alerts
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [WHITELIST, BLACKLIST, UNKNOWN, WEAPON]
+          description: Filter alerts by detection category
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Search term for identity name or RTSP stream URL
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+          description: Maximum number of alert items to return
+      responses:
+        '200':
+          description: List of historical alerts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Alert'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+    post:
+      summary: Acknowledge alerts
+      description: Marks one or all alert records as acknowledged by security operators.
+      tags:
+        - Security Alerts
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  example: "b7e21a00-349f-4e0d-b153-294719c8f2b1"
+                  description: Omit ID or pass null to acknowledge all unacknowledged alerts
+                acknowledgeAll:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: Alert acknowledgment outcome
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        example: 5
+
+    delete:
+      summary: Clear database alert history
+      description: Permanently wipes all alert logs from the SQLite database.
+      tags:
+        - Security Alerts
+      responses:
+        '200':
+          description: Alerts wiped successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "All alerts cleared successfully"
+
+  /api/alerts/sse:
+    get:
+      summary: Real-Time SSE Alert Event Stream
+      description: Establishes a persistent Server-Sent Events (SSE) connection to stream new live detection alerts directly to the browser UI.
+      tags:
+        - Security Alerts
+      responses:
+        '200':
+          description: Text Event Stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                example: "data: {\"id\":\"123\",\"name\":\"unknown\",\"score\":0.42,\"source\":\"rtsp://...\",\"category\":\"UNKNOWN\",\"timestamp\":\"2026-08-03T12:00:00Z\",\"faceImage\":\"base64...\"}\n\n"
+
+  # ==========================================
+  # CAMERA MANAGEMENT API
+  # ==========================================
+  /api/cameras:
+    get:
+      summary: List registered camera channels
+      description: Returns all configured RTSP streams with aggregated access rule counts.
+      tags:
+        - Camera Channels
+      responses:
+        '200':
+          description: List of camera channels
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Camera'
+
+    post:
+      summary: Register a new camera stream channel
+      description: Adds a new RTSP stream channel to the database.
+      tags:
+        - Camera Channels
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - rtspUrl
+              properties:
+                name:
+                  type: string
+                  example: "Entrance Dome Camera"
+                rtspUrl:
+                  type: string
+                  example: "rtsp://admin:123456Ai@192.168.1.69:554/snl/live/1/1"
+                location:
+                  type: string
+                  example: "Main Entrance Gate"
+                isActive:
+                  type: boolean
+                  default: true
+      responses:
+        '201':
+          description: Camera registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Camera'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+
+    patch:
+      summary: Update camera details or active state
+      tags:
+        - Camera Channels
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+                rtspUrl:
+                  type: string
+                location:
+                  type: string
+                isActive:
+                  type: boolean
+      responses:
+        '200':
+          description: Camera updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Camera'
+
+    delete:
+      summary: Delete a camera channel
+      tags:
+        - Camera Channels
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Camera deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+
+  /api/cameras/play:
+    post:
+      summary: Spawn native desktop stream player
+      description: Triggers a server-side native OpenCV window process (`play_stream.py`) to display an RTSP stream.
+      tags:
+        - Camera Channels
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rtspUrl
+              properties:
+                rtspUrl:
+                  type: string
+                  example: "rtsp://admin:123456Ai@192.168.1.69:554/snl/live/1/1"
+                name:
+                  type: string
+                  example: "Entrance Camera"
+      responses:
+        '200':
+          description: Player spawned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Live viewer process started"
+
+  # ==========================================
+  # PEOPLE / IDENTITIES API
+  # ==========================================
+  /api/people:
+    get:
+      summary: List registered identity profiles
+      tags:
+        - Identity Database
+      responses:
+        '200':
+          description: List of registered people
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Person'
+
+    post:
+      summary: Register a new person profile
+      tags:
+        - Identity Database
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: "sameera"
+                notes:
+                  type: string
+                  example: "Security Lead"
+      responses:
+        '201':
+          description: Person created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Person'
+
+    delete:
+      summary: Delete an identity profile
+      tags:
+        - Identity Database
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Person deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+
+  /api/people/sync:
+    get:
+      summary: Sync encodings from Python engine
+      description: Queries `http://localhost:8766/api/people` and merges new face names into the Next.js database.
+      tags:
+        - Identity Database
+      responses:
+        '200':
+          description: Sync results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  addedCount:
+                    type: integer
+                    example: 3
+                  totalCount:
+                    type: integer
+                    example: 12
+
+  # ==========================================
+  # ACCESS CONTROL RULES API
+  # ==========================================
+  /api/rules:
+    get:
+      summary: List access control rules
+      tags:
+        - Access Control Rules
+      parameters:
+        - name: cameraId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Use camera UUID or "null" for global rules
+        - name: personId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: listType
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [BLACKLIST, WHITELIST]
+      responses:
+        '200':
+          description: List of rules
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Rule'
+
+    post:
+      summary: Create or update access control rule
+      tags:
+        - Access Control Rules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - personId
+                - listType
+              properties:
+                cameraId:
+                  type: string
+                  nullable: true
+                  example: "4c70a82b-8a21-4f19-9ef9-73e4b7b25ad1"
+                  description: Omit or pass null for global rule
+                personId:
+                  type: string
+                  example: "8f1a23b4-567c-890d-e12f-3456789abcde"
+                listType:
+                  type: string
+                  enum: [BLACKLIST, WHITELIST]
+                  example: "BLACKLIST"
+      responses:
+        '200':
+          description: Rule saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Rule'
+
+    delete:
+      summary: Delete an access rule
+      tags:
+        - Access Control Rules
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Rule deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+
+  # ==========================================
+  # CAMERA CONSOLE & BACKGROUND CONTROLS
+  # ==========================================
+  /api/process-status:
+    get:
+      summary: Query background detection script statuses
+      tags:
+        - Console & Process Control
+      responses:
+        '200':
+          description: Status dictionary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessStatus'
+
+  /api/register-face:
+    post:
+      summary: Launch guided face capture script (`capture_faces.py`)
+      tags:
+        - Console & Process Control
+      responses:
+        '200':
+          description: Script launch status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericStatusResponse'
+
+  /api/verify-identity:
+    post:
+      summary: Launch face verification GUI (`verify_gui.py`)
+      tags:
+        - Console & Process Control
+      responses:
+        '200':
+          description: Script launch status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericStatusResponse'
+
+  /api/multi-camera-view:
+    post:
+      summary: Launch multi-camera grid detection (`verify_multi.py`)
+      tags:
+        - Console & Process Control
+      responses:
+        '200':
+          description: Script launch status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericStatusResponse'
+
+  /api/continuos-feed:
+    post:
+      summary: Launch continuous single-feed monitor (`verify_continuous.py`)
+      tags:
+        - Console & Process Control
+      responses:
+        '200':
+          description: Script launch status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericStatusResponse'
+
+# ==========================================
+# COMPONENTS & SCHEMAS
+# ==========================================
+components:
+  responses:
+    ErrorResponse:
+      description: Standard API Error Format
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              error:
+                type: string
+                example: "Resource not found or database error"
+
+  schemas:
+    Alert:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "sameera"
+        score:
+          type: number
+          format: float
+          example: 0.85
+        source:
+          type: string
+          example: "rtsp://admin:123456Ai@192.168.1.69:554/snl/live/1/1"
+        category:
+          type: string
+          enum: [WHITELIST, BLACKLIST, UNKNOWN, WEAPON]
+          example: "BLACKLIST"
+        acknowledged:
+          type: boolean
+          example: false
+        timestamp:
+          type: string
+          format: date-time
+        faceImage:
+          type: string
+          description: Base64 data URL string of cropped face or weapon image
+        cameraId:
+          type: string
+          nullable: true
+
+    Camera:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "Tellers Counter Camera"
+        rtspUrl:
+          type: string
+          example: "rtsp://admin:123456Ai@192.168.1.69:554/snl/live/1/1"
+        location:
+          type: string
+          nullable: true
+          example: "Main Cashier Counter"
+        isActive:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        _count:
+          type: object
+          properties:
+            rules:
+              type: integer
+              example: 3
+
+    Person:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "sameera"
+        notes:
+          type: string
+          nullable: true
+          example: "Branch Manager"
+        createdAt:
+          type: string
+          format: date-time
+
+    Rule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        cameraId:
+          type: string
+          nullable: true
+        personId:
+          type: string
+        listType:
+          type: string
+          enum: [BLACKLIST, WHITELIST]
+        camera:
+          type: object
+          nullable: true
+          properties:
+            name:
+              type: string
+            rtspUrl:
+              type: string
+        person:
+          type: object
+          properties:
+            name:
+              type: string
+
+    ProcessStatus:
+      type: object
+      properties:
+        registerFace:
+          type: string
+          enum: [idle, starting, running, failed]
+          example: "idle"
+        multiCamera:
+          type: string
+          enum: [idle, starting, running, failed]
+          example: "running"
+        continuousFeed:
+          type: string
+          enum: [idle, starting, running, failed]
+          example: "idle"
+        verifyIdentity:
+          type: string
+          enum: [idle, starting, running, failed]
+          example: "idle"
+
+    GenericStatusResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Process initiated successfully"
+
+    # ==========================================
+    # MQTT MESSAGING SCHEMAS (Topic: security/alerts)
+    # ==========================================
+    MqttFaceAlertPayload:
+      type: object
+      description: MQTT JSON Payload published on topic "security/alerts" for face matches and unknown faces
+      required:
+        - type
+        - name
+        - score
+        - source
+        - timestamp
+        - face_image
+      properties:
+        type:
+          type: string
+          enum: [face_detected]
+          example: "face_detected"
+        name:
+          type: string
+          example: "sameera"
+          description: Person identity name or "unknown"
+        score:
+          type: number
+          format: float
+          example: 0.85
+          description: Matching confidence score (0.0 to 1.0)
+        source:
+          type: string
+          example: "rtsp://admin:123456Ai@192.168.1.69:554/snl/live/1/1"
+          description: RTSP stream URL or camera source identifier
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-08-03T12:15:00.000Z"
+        face_image:
+          type: string
+          description: Base64-encoded JPEG image string of the cropped face frame
+          example: "/9j/4AAQSkZJRgABAQ..."
+
+    MqttWeaponAlertPayload:
+      type: object
+      description: MQTT JSON Payload published on topic "security/alerts" for weapon threat detections
+      required:
+        - type
+        - weapon_type
+        - confidence
+        - source
+        - timestamp
+        - weapon_image
+      properties:
+        type:
+          type: string
+          enum: [weapon_detected]
+          example: "weapon_detected"
+        weapon_type:
+          type: string
+          example: "gun"
+          description: Detected weapon class (e.g. gun, knife)
+        confidence:
+          type: number
+          format: float
+          example: 0.92
+          description: Detection model confidence score
+        source:
+          type: string
+          example: "rtsp://admin:123456Ai@192.168.1.69:554/snl/live/1/1"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-08-03T12:15:00.000Z"
+        weapon_image:
+          type: string
+          description: Base64-encoded JPEG image string of the cropped weapon frame
+          example: "/9j/4AAQSkZJRgABAQ..."
