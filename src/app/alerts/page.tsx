@@ -133,6 +133,12 @@ export default function AlertsFeedPage() {
                 WEAPON
               </button>
               <button
+                onClick={() => setSelectedCategory("SUSPICIOUS")}
+                className={`filter-pill pill-suspicious ${selectedCategory === "SUSPICIOUS" ? "active" : ""}`}
+              >
+                SUSPICIOUS
+              </button>
+              <button
                 onClick={() => setSelectedCategory("UNKNOWN")}
                 className={`filter-pill pill-unknown ${selectedCategory === "UNKNOWN" ? "active" : ""}`}
               >

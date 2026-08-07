@@ -409,6 +409,7 @@ button, input, select, textarea {
   overflow: hidden;
   border: 1px solid var(--border-subtle);
   flex-shrink: 0;
+  background: #000;
 }
 
 .alert-face-image {
@@ -418,11 +419,12 @@ button, input, select, textarea {
 }
 
 .alert-details {
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.25rem;
-  flex-grow: 1;
+  gap: 0.3rem;
+  min-width: 0;
 }
 
 .alert-details-row {
@@ -433,7 +435,10 @@ button, input, select, textarea {
 }
 
 .alert-name {
-  font-size: 0.82rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-weight: 600;
   text-transform: uppercase;
   color: var(--text-primary);
@@ -456,6 +461,7 @@ button, input, select, textarea {
 
 .category-blacklist { background: var(--accent-red-dim); color: var(--accent-red); }
 .category-weapon { background: var(--accent-red-dim); color: var(--accent-red); font-weight: 700; }
+.category-suspicious { background: rgba(255, 152, 0, 0.15); color: #ff9800; font-weight: 700; }
 .category-unknown { background: var(--accent-yellow-dim); color: var(--accent-yellow); }
 .category-whitelist { background: var(--accent-green-dim); color: var(--accent-green); }
 

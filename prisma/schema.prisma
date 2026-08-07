@@ -13,7 +13,7 @@ model Alert {
   source       String
   timestamp    DateTime @default(now())
   faceImage    String
-  category     String   @default("UNKNOWN")  // BLACKLIST, WHITELIST, UNKNOWN, WEAPON
+  category     String   @default("UNKNOWN")  // BLACKLIST, WHITELIST, UNKNOWN, WEAPON, SUSPICIOUS
   acknowledged Boolean  @default(false)
   cameraId     String?
   camera       Camera?  @relation(fields: [cameraId], references: [id])

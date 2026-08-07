@@ -37,11 +37,28 @@ export function initMqttSubscriber() {
       console.log(`[MQTT Background Client] New alert received on topic "${topic}". Type: ${payload.type || 'N/A'}, Source: ${payload.source || 'N/A'}`);
       
       const isWeapon = payload.type === "weapon_detected";
-      const name = isWeapon ? (payload.weapon_type || "weapon") : (payload.name || "unknown");
-      const score = isWeapon ? (payload.confidence ?? 0.0) : (payload.score ?? 0.0);
+      const isSuspicious = payload.type === "suspicious_activity";
+      
+      let name = "unknown";
+      let score = 0.0;
+      let faceImage = "";
+      
+      if (isWeapon) {
+        name = payload.weapon_type || "weapon";
+        score = payload.confidence ?? 0.0;
+        faceImage = payload.weapon_image || "";
+      } else if (isSuspicious) {
+        name = payload.activity_type || "suspicious";
+        score = payload.confidence ?? 0.0;
+        faceImage = payload.suspicious_image || "";
+      } else {
+        name = payload.name || "unknown";
+        score = payload.score ?? 0.0;
+        faceImage = payload.face_image || "";
+      }
+      
       const source = payload.source || "";
       const timestamp = payload.timestamp ? new Date(payload.timestamp) : new Date();
-      const faceImage = isWeapon ? (payload.weapon_image || "") : (payload.face_image || "");
       
       if (!source) {
         console.error("[MQTT Background Client] Rejected message: Missing source RTSP stream URL");
@@ -59,6 +76,8 @@ export function initMqttSubscriber() {
       
       if (isWeapon) {
         resolvedCategory = "WEAPON";
+      } else if (isSuspicious) {
+        resolvedCategory = "SUSPICIOUS";
       } else {
         const normalizedName = name.trim().toLowerCase();
         const registeredPerson = await prisma.person.findUnique({

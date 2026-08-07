@@ -32,6 +32,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert }) => {
   const categoryConfig = {
     BLACKLIST: { label: "BLACKLISTED", class: "alert-card-blacklist", badge: "category-blacklist" },
     WEAPON: { label: "WEAPON THREAT", class: "alert-card-weapon", badge: "category-weapon" },
+    SUSPICIOUS: { label: "SUSPICIOUS ACTIVITY", class: "alert-card-suspicious", badge: "category-suspicious" },
     UNKNOWN: { label: "UNKNOWN PERSON", class: "alert-card-unknown", badge: "category-unknown" },
     WHITELIST: { label: "WHITELISTED", class: "alert-card-whitelist", badge: "category-whitelist" }
   };
@@ -61,13 +62,15 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert }) => {
       ? `data:image/jpeg;base64,${alert.faceImage}`
       : defaultSvgAvatar;
 
+  const isNonFace = alert.category === "WEAPON" || alert.category === "SUSPICIOUS";
+
   return (
     <div className={`alert-card animate-enter ${currentCategory.class} ${alert.acknowledged ? "acknowledged" : ""}`}>
       {/* Alert Crop Preview Frame */}
       <div className="alert-image-container">
         <img
           src={imageSrc}
-          alt={alert.category === "WEAPON" ? "Weapon Crop" : "Face Crop"}
+          alt={isNonFace ? `${alert.category} Crop` : "Face Crop"}
           className="alert-face-image"
           onError={(e) => {
             (e.target as HTMLImageElement).src = defaultSvgAvatar;
@@ -79,7 +82,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert }) => {
       <div className="alert-details">
         <div className="alert-details-row">
           <div className="alert-name text-cyan uppercase font-bold">
-            {alert.category === "WEAPON" ? alert.name : alert.name || "unknown identity"}
+            {isNonFace ? alert.name : alert.name || "unknown identity"}
           </div>
           <div className="alert-badges">
             <span className={`category-badge ${currentCategory.badge}`}>

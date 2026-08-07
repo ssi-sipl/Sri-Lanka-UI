@@ -9,7 +9,7 @@ export interface AlertData {
   source: string;
   timestamp: string;
   faceImage: string;
-  category: "BLACKLIST" | "WHITELIST" | "UNKNOWN" | "WEAPON";
+  category: "BLACKLIST" | "WHITELIST" | "UNKNOWN" | "WEAPON" | "SUSPICIOUS";
   acknowledged: boolean;
   cameraId?: string | null;
   camera?: {
@@ -33,6 +33,7 @@ interface MqttContextType {
   unacknowledgedCounts: {
     blacklist: number;
     weapon: number;
+    suspicious: number;
     unknown: number;
     whitelist: number;
   };
@@ -52,7 +53,7 @@ const playChime = (category: string) => {
     if (!AudioContextClass) return;
     const ctx = new AudioContextClass();
 
-    if (category === "BLACKLIST" || category === "WEAPON") {
+    if (category === "BLACKLIST" || category === "WEAPON" || category === "SUSPICIOUS") {
       // Urgent, loud dual sawtooth sweep alarm for threats
       const duration = 0.6;
       const osc1 = ctx.createOscillator();
@@ -194,12 +195,13 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [unacknowledgedCounts, setUnacknowledgedCounts] = useState({
     blacklist: 0,
     weapon: 0,
+    suspicious: 0,
     unknown: 0,
     whitelist: 0
   });
 
   useEffect(() => {
-    const uniqueNames = new Set(alerts.filter(a => a.category !== "WEAPON").map(a => a.name.trim().toLowerCase()));
+    const uniqueNames = new Set(alerts.filter(a => a.category !== "WEAPON" && a.category !== "SUSPICIOUS").map(a => a.name.trim().toLowerCase()));
     const lastTime = alerts.length > 0 ? alerts[0].timestamp : null;
 
     setStats({
@@ -208,11 +210,12 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
       lastDetectionTime: lastTime
     });
 
-    const counts = { blacklist: 0, weapon: 0, unknown: 0, whitelist: 0 };
+    const counts = { blacklist: 0, weapon: 0, suspicious: 0, unknown: 0, whitelist: 0 };
     alerts.forEach((alert) => {
       if (!alert.acknowledged) {
         if (alert.category === "BLACKLIST") counts.blacklist++;
         else if (alert.category === "WEAPON") counts.weapon++;
+        else if (alert.category === "SUSPICIOUS") counts.suspicious++;
         else if (alert.category === "UNKNOWN") counts.unknown++;
         else if (alert.category === "WHITELIST") counts.whitelist++;
       }
