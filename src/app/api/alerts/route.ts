@@ -51,15 +51,31 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     
-    // Distinguish between face_detected and weapon_detected
+    // Distinguish alert types: face_detected, weapon_detected, suspicious_activity
     const isWeapon = body.type === "weapon_detected";
+    const isSuspicious = body.type === "suspicious_activity";
     
-    // Normalize fields
-    const name = isWeapon ? (body.weapon_type || "weapon") : (body.name || "unknown");
-    const score = isWeapon ? (body.confidence ?? 0.0) : (body.score ?? 0.0);
+    // Normalize fields based on event type
+    let name = "unknown";
+    let score = 0.0;
+    let faceImage = "";
+
+    if (isWeapon) {
+      name = body.weapon_type || "weapon";
+      score = body.confidence ?? 0.0;
+      faceImage = body.weapon_image || "";
+    } else if (isSuspicious) {
+      name = body.activity_type || "suspicious";
+      score = body.confidence ?? 0.0;
+      faceImage = body.suspicious_image || "";
+    } else {
+      name = body.name || "unknown";
+      score = body.score ?? 0.0;
+      faceImage = body.face_image || "";
+    }
+
     const source = body.source || "";
     const timestamp = body.timestamp ? new Date(body.timestamp) : new Date();
-    const faceImage = isWeapon ? (body.weapon_image || "") : (body.face_image || "");
 
     if (!source) {
       return NextResponse.json(
@@ -78,6 +94,8 @@ export async function POST(request: Request) {
 
     if (isWeapon) {
       resolvedCategory = "WEAPON";
+    } else if (isSuspicious) {
+      resolvedCategory = "SUSPICIOUS";
     } else {
       const normalizedName = name.trim().toLowerCase();
       

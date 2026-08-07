@@ -84,7 +84,7 @@ export const BankFloorMap: React.FC = () => {
       const hasRecentThreat = alerts.some((alert) => {
         if (alert.source !== node.rtspUrl) return false;
         const timeElapsed = Date.now() - new Date(alert.timestamp).getTime();
-        const isThreat = alert.category === "BLACKLIST" || alert.category === "WEAPON";
+        const isThreat = alert.category === "BLACKLIST" || alert.category === "WEAPON" || alert.category === "SUSPICIOUS";
         return isThreat && timeElapsed < 20000;
       });
 
